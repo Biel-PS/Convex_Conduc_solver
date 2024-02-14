@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import numpy as np
 import sympy as sp
 import matplotlib as mp
@@ -22,35 +23,36 @@ geometric_temp = [273.15+30,273.15+80]
 qv = 1E7 #internal generated heat.
 print(qv)
 
-lambda_transport = [300,300] #Deffine the number of lambdas from closest to x = 0 (or r = 0) to furthest.
+lambda_transport = [300,300] #Deffine the number of lambdas from closest to x = 0 (or r = 0) to furthest (one for each iteration).
 alfa_convex = [30,200] #Deffine the number of convexion coeff from closest to x = 0 (or r = 0) to furthest.
 start_run = True
+Position = 0;
 
-q_v,lam,c1,c2 = sp.symbols ('q_v lambda C_1 C_2')
+q_v,lam,C1,C2 = sp.symbols ('q_v lambda C_1 C_2')
 # if there is no alfa between boundaries set it as 0.
 class Plane_block:
-    def __init__(self,geometric_par,geometric_temp,lambda_transport,alfa_convex,qv):
+    def __init__(self,geometric_par,geometric_temp,lambda_transport,alfa_convex,qv,Position):
         self.Geometry = geometric_par
         self.Temp = geometric_temp
-        self.Lambda = lambda_transport
+        self.Lambda = lambda_transport[Position]
         self.Alfa = alfa_convex
         self.qv = qv
-        #Definition of transfer equation
+        # Definition of transfer equation
         x = sp.symbols ('x')
-        T = -q_v/(2*lam)*x**2 + c1*x + c2
-        q_x = q_v*x-lam*c1
+        self.T = -q_v/(2*lam)*x**2 + C1*x + C2
+        self.q_x = q_v*x-lam*C1
 
     def Solve_for_unique_body (self):
         tw1,tw2,x = sp.symbols('T_{w1} T_{w2} x')
 
-        c1_a = (tw2 - tw1) / (self.Geometry[2]) + (self.qv * self.Geometry[2]) / (2 * self.Lambda[0])
-        c1_b = (tw2 - tw1) / (self.Geometry[2]) + (self.qv * self.Geometry[2]) / (2 * self.Lambda[1])
+        c1 = (tw2 - tw1) / (self.Geometry[2]) + (self.qv * self.Geometry[2]) / (2 * self.Lambda)
+
 
         q_ca = self.Alfa[0]*(self.Temp[0]-tw1)
-        q_a = - self.Lambda[0]*c1_a
+        q_a = - self.Lambda*c1
 
         q_cb = self.Alfa[1] * (tw2 - self.Temp[1])
-        q_b = self.qv * self.Geometry[2] - self.Lambda[1] * c1_b
+        q_b = self.qv * self.Geometry[2] - self.Lambda * c1
 
         tw1_sol = sp.solve((q_ca-q_a),tw1)
 
@@ -61,8 +63,28 @@ class Plane_block:
         sp.pprint(tw2_sol)
 
         tw1_sol = tw1_sol[0].subs(tw2,tw2_sol[0])
+        print(c1)
+        c1 = c1.subs([ (tw2,tw2_sol[0]), (tw1, tw1_sol)])
+        c2 = tw1_sol-273.15
+        print(c1)
+        self.T = self.T.subs([(q_v,self.qv), (lam,self.Lambda), (C1,c1), (C2,c2)])
+        self.q_x = self.q_x.subs([(q_v, self.qv), (lam, self.Lambda), (C1, c1)])
+        return self.T, self.q_x
+    def Plot_T_and_q_x (self,step):
+        x = sp.symbols('x')
+        num_positions = int((self.Geometry[2])/step + 1)
+        x_ = np.linspace(0,self.Geometry[2],num_positions)
+        Temp = np.zeros(num_positions)
+        q_x = np.zeros(num_positions)
+        for i in range(0,num_positions):
+            Temp[i] = self.T.subs(x,x_[i])
+            q_x[i] = self.q_x.subs(x,x_[i])
 
-        return tw1_sol-273.15,tw2_sol[0]-273.15
+
+        plt.plot(x_,Temp)
+        plt.plot(x_,q_x)
+
+
 
 class Sphere:
     def __init__(self,geometric_par,geometric_temp,lambda_transport,alfa_convex):
@@ -92,9 +114,14 @@ class Cylinder:
 
 match type:
     case 'P':
-        Body = Plane_block (geometric_par,geometric_temp,lambda_transport,alfa_convex,qv)
-        [T1_deg,T2_deg] = Body.Solve_for_unique_body()
-        print(T1_deg)
+        Body = Plane_block (geometric_par,geometric_temp,lambda_transport,alfa_convex,qv,Position)
+        [T,q_x] = Body.Solve_for_unique_body()
+        sp.pprint(T)
+        Body.Plot_T_and_q_x(1E-4)
+
+
+
+
     case 'C':
         Body = Cylinder(geometric_par, geometric_temp, lambda_transport, alfa_convex)
     case 'S':
