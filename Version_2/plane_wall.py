@@ -56,13 +56,18 @@ def Solve_4_multiple (lamnda_vector,alfa_vector,geometry_vector,boundary_temp,qv
     for i in range(0,len(geometry_vector)-1):
         C_A = ((Wall_temp[2 * i] - Wall_temp[2 * i - 1]) / (geometry_vector[i]) + (qv_vector[i] * geometry_vector[i]) / (2 * lamnda_vector[i]))
         C_B = ((Wall_temp[2 * (i+1)] - Wall_temp[2 * (i+1) - 1]) / (geometry_vector[(i+1)]) + (qv_vector[(i+1)] * geometry_vector[(i+1)]) / (2 * lamnda_vector[(i+1)]))
-        Eq_3[i]= lamnda_vector[i] * C_A - lamnda_vector[i+1] * C_B
+        Eq_3[i]= lamnda_vector[i] * C_A - lamnda_vector[i+1] * C_B - qv_vector[i]*geometry_vector[i]
     #print(Eq_1,"\n", Eq_2,"\n", Eq_3)
     Values = np.append(Conv_Temp[1:len(Conv_Temp)-1],Wall_temp)
-    All_Eq = np.append(np.append(Eq_1,Eq_2),Eq_3)
+    All_Eq = np.append([Eq_1,Eq_2],Eq_3)
     #print(All_Eq)
-    Values_solved = sp.solve(All_Eq,Values,dict = False)
-    print(Values_solved)
+    Values_solved = sp.solve(All_Eq,Values,dict = False,set = True)
+    Values_solved_values = list(Values_solved[1])[0]
+    Values_solved_index = Values_solved [0]
+    print(Values_solved_values,"\n", Values_solved_index)
+    #Values_solved = np.append(Values_solved, [Conv_Temp[0], Conv_Temp[len(Conv_Temp) - 1]])
+
+
 def Plot_T_and_q_x(q_x,T,Geometry, step):
     x = sp.symbols('x')
     pos_Temp_max = 0
