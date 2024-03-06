@@ -1,0 +1,3 @@
+/home/bps/CLionProjects/Convex_Conduc_solver/cmake-build-debug/CMakeFiles/Convex_Conduc_solver.dir
+/home/bps/CLionProjects/Convex_Conduc_solver/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/bps/CLionProjects/Convex_Conduc_solver/cmake-build-debug/CMakeFiles/rebuild_cache.dir
