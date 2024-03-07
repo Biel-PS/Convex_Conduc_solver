@@ -16,7 +16,7 @@ const double T_wall = 72.13; // Temp of the wall r = Rint [Cº]
 //double lambda_f[2] = [200,10]; // lambda of the material (homogeneous case) [a_nT^n,...a_1T,a_0] (function of T)
 const double lambda_f = 58;
 const double alfa_exterior = 110; //alpha in the length of the fin with outter fluid
-const double alfa_extrem = 0; //alpha in the end of fin
+const double alfa_extrem = 200; //alpha in the end of fin
 const double nf = 163; //Number of fins
 //NUMRICAL PARAMETERS
 const int N = 300; //Number of control volumes
@@ -111,11 +111,11 @@ public:
 class Solver { //Initial temp map deffinition class
 public:
 
-    void gauss_seidel(){ //Definim el mapa inicial de temperatures
+    static void gauss_seidel(){ //Definim el mapa inicial de temperatures
         int cont = 0;
         while (true){
             if(norm(T_n,T,delta)){
-                cout << cont << "\n";
+                //cout << cont << "\n";
                 break;
             }
             else{
@@ -134,7 +134,7 @@ public:
     }
 
     void TDMA (){ }
-    void Qfin (){
+    static void Qfin (){
         Q_f = 0;
         for (int i = 1 ; i<N+1;i++){
             Q_f += alfa_exterior*(T[i]-Text)*Ap[i-1];
@@ -144,18 +144,18 @@ public:
         Q_base_fin  = - lambda_f* ((T[1]-T[0])/dpe) * 2 * M_PI * Rint * ef;
 
     }
-    void Qbody (){
+    static void Qbody (){
         Q_b  = alfa_exterior*(T_wall - Text)*2 * M_PI * Rint * eb;
     }
     static bool norm (double T_1[N+2],double T_2[N+2],double delta){
         bool done = true;
         for (int i = 0; i< N+2;i++){
-             if (abs(T_1[i]-T_2[i]) > delta){
+             if (abs(T_1[i]-T_2[i]) >= delta){
                  done = false;
                  break;
              }
         }
-        return sqrt(done);
+        return done;
     }
 };
 
@@ -167,12 +167,14 @@ int main() {
     Mapa_inicial map;
     Coefs_discrtitzacio coef;
     Solver solver;
-    solver.gauss_seidel();
-    for (int i = 0; i<(N+2); i++){
-        cout << T[i] << "\n";
+    Solver::gauss_seidel();
+
+    for (double i : T){
+        cout << i << "\n";
     }
-    solver.Qfin();
-    solver.Qbody();
+
+    Solver::Qfin();
+    Solver::Qbody();
 
     cout <<" Q_fin: " << Q_f <<"\n Q_body: "<<Q_b <<"\n Q_base_fin: "<<Q_base_fin;
 
