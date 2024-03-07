@@ -125,7 +125,7 @@
       <updated>1707901553129</updated>
       <workItem from="1709761592501" duration="3375000" />
       <workItem from="1709766164185" duration="1000" />
-      <workItem from="1709820481062" duration="8593000" />
+      <workItem from="1709820481062" duration="13875000" />
     </task>
     <task id="LOCAL-00001" summary="update">
       <created>1707924754764</created>
@@ -169,7 +169,14 @@
       <option name="project" value="LOCAL" />
       <updated>1709826787531</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="update">
+      <created>1709829820212</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1709829820212</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -189,5 +196,21 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="update" />
     <option name="LAST_COMMIT_MESSAGE" value="update" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/Aplication_cpp/Main.cpp</url>
+          <line>174</line>
+          <option name="timeStamp" value="4" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+    <watches-manager>
+      <configuration name="CppFileRunConfiguration">
+        <watch expression="S" language="ObjectiveC" />
+      </configuration>
+    </watches-manager>
   </component>
 </project>
