@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/Numerical_try.iml" filepath="$PROJECT_DIR$/.idea/Numerical_try.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/V1.iml" filepath="$PROJECT_DIR$/.idea/V1.iml" />
     </modules>
   </component>
