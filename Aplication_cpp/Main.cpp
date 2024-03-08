@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <cmath>
+#include <complex>
 using namespace std;
 //CASE OF A CYLINDER WITH nf FINS
 //Declaration of global variables
@@ -16,12 +17,12 @@ const double T_wall = 72.13; // Temp of the wall r = Rint [Cº]
 //double lambda_f[2] = [200,10]; // lambda of the material (homogeneous case) [a_nT^n,...a_1T,a_0] (function of T)
 const double lambda_f = 58;
 const double alfa_exterior = 110; //alpha in the length of the fin with outter fluid
-const double alfa_extrem = 200; //alpha in the end of fin
+const double alfa_extrem = 0; //alpha in the end of fin
 const double nf = 163; //Number of fins
 //NUMRICAL PARAMETERS
 const int N = 300; //Number of control volumes
-const double delta = 1E-10; //Convergence criteria
-const double Tstart = 10; //Initial temp map (supposed equal in all geometry) [Cº]
+const double delta = 1E-5; //Convergence criteria
+const double Tstart = 100; //Initial temp map (supposed equal in all geometry) [Cº]
 
 
 // DEFFINE VECTOR LENGTH AND OPERATION VARIABLES
@@ -79,7 +80,7 @@ public:
     Mapa_inicial(){ //Definim el mapa inicial de temperatures
         for(int i = 0;i<(N+2);i++){
             T[i] = Tstart;
-            T_n[i] = T[i] + 10; // Ens assegurem que per la primera iteració no es compleix el criteri d'acceptació
+            // T_n[i] = T[i] + 10;  Ens assegurem que per la primera iteració no es compleix el criteri d'acceptació
         }
     }
 };
@@ -114,7 +115,7 @@ public:
     static void gauss_seidel(){ //Definim el mapa inicial de temperatures
         int cont = 0;
         while (true){
-            if(norm(T_n,T,delta)){
+            if(norma(T_n,T)){
                 //cout << cont << "\n";
                 break;
             }
@@ -137,20 +138,20 @@ public:
     static void Qfin (){
         Q_f = 0;
         for (int i = 1 ; i<N+1;i++){
-            Q_f += alfa_exterior*(T[i]-Text)*Ap[i-1];
+            Q_f += alfa_exterior*(T_n[i]-Text)*Ap[i-1];
         }
-        Q_f += alfa_extrem*(T[N+1] - Text)*2*M_PI *Rext * ef;
+        Q_f += alfa_extrem*(T_n[N+1] - Text)*2*M_PI *Rext * ef;
        // Q_f *= nf;
-        Q_base_fin  = - lambda_f* ((T[1]-T[0])/dpe) * 2 * M_PI * Rint * ef;
+        Q_base_fin  = - lambda_f* ((T_n[1]-T_n[0])/dpe) * 2 * M_PI * Rint * ef;
 
     }
     static void Qbody (){
         Q_b  = alfa_exterior*(T_wall - Text)*2 * M_PI * Rint * eb;
     }
-    static bool norm (double T_1[N+2],double T_2[N+2],double delta){
+    static bool norma (double T_1[N+2],double T_2[N+2]){
         bool done = true;
         for (int i = 0; i< N+2;i++){
-             if (abs(T_1[i]-T_2[i]) >= delta){
+             if (norm(T_1[i]-T_2[i]) >= delta){
                  done = false;
                  break;
              }
@@ -176,7 +177,7 @@ int main() {
     Solver::Qfin();
     Solver::Qbody();
 
-    cout <<" Q_fin: " << Q_f <<"\n Q_body: "<<Q_b <<"\n Q_base_fin: "<<Q_base_fin;
+    cout <<" Q_fin: " << Q_f <<"\n Q_body: "<<Q_b <<"\n Q_base_fin: "<<Q_base_fin << "\n Error factor: "<<(abs(Q_f - Q_base_fin)) ;
 
 
     return 0;

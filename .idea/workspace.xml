@@ -71,9 +71,9 @@
   }
 }</component>
   <component name="RunManager" selected="C/C++ File.Main.cpp">
-    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
-        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
     <configuration name="Main.cpp" type="CppFileRunConfiguration" factoryName="CppFileRunConfiguration" singleton="false" nameIsGenerated="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Numerical_try" TARGET_NAME="Main.cpp" CONFIG_NAME="Main.cpp">
@@ -125,7 +125,8 @@
       <updated>1707901553129</updated>
       <workItem from="1709761592501" duration="3375000" />
       <workItem from="1709766164185" duration="1000" />
-      <workItem from="1709820481062" duration="13875000" />
+      <workItem from="1709820481062" duration="14954000" />
+      <workItem from="1709929774909" duration="2281000" />
     </task>
     <task id="LOCAL-00001" summary="update">
       <created>1707924754764</created>
@@ -176,7 +177,21 @@
       <option name="project" value="LOCAL" />
       <updated>1709829820212</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="update">
+      <created>1709837476025</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1709837476025</updated>
+    </task>
+    <task id="LOCAL-00009" summary="update">
+      <created>1709837795893</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1709837795893</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -198,15 +213,6 @@
     <option name="LAST_COMMIT_MESSAGE" value="update" />
   </component>
   <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/Aplication_cpp/Main.cpp</url>
-          <line>174</line>
-          <option name="timeStamp" value="4" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
     <watches-manager>
       <configuration name="CppFileRunConfiguration">
         <watch expression="S" language="ObjectiveC" />
