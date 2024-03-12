@@ -7,22 +7,22 @@ using namespace std;
 //CASE OF A CYLINDER WITH nf FINS
 //Declaration of global variables
 
-//FISICAL PARAMETERS
+//FISICALPARAMETERS
 const double Rint = 1; // Internal radius of the fin
-const double Rext = 3; // External radius of the fin
+const double Rext = 2; // External radius of the fin
 const double ef = 4E-3; // Fin's vertical length [m]
 const double eb = 5E-3; // Distance between fins [m]
-const double Text = 25; // Temp at exterior [Cº]
+const double Text = 0; // Temp at exterior [Cº]
 const double T_wall = 200; // Temp of the wall r = Rint [Cº]
 //double lambda_f[2] = [200,10]; // lambda of the material (homogeneous case) [a_nT^n,...a_1T,a_0] (function of T)
 const double lambda_f = 100;
 const double alfa_exterior = 200; //alpha in the length of the fin with outter fluid
-const double alfa_extrem = 50; //alpha in the end of fin
+const double alfa_extrem = 0; //alpha in the end of fin
 const double nf = 163; //Number of fins
 //NUMRICAL PARAMETERS
-const int N = 500; //Number of control volumes
-const double delta = 1E-5; //Convergence criteria
-const double Tstart = 100; //Initial temp map (supposed equal in all geometry) [Cº]
+const int N = 1000; //Number of control volumes
+const double delta = 1E-9; //Convergence criteria
+const double Tstart = 1; //Initial temp map (supposed equal in all geometry) [Cº]
 
 
 // DEFFINE VECTOR LENGTH AND OPERATION VARIABLES
@@ -34,10 +34,11 @@ double a_E[N+2] = {0};
 double a_W[N+2] = {0};
 double a_P[N+2] = {0};
 double b_P[N+2] = {0};
+double P[N+2] = {0};
+double R[N+2] = {0};
+
 double Ap[N] = {0};
 double S[N+1] = {0};
-
-
 double dpw = 0; // malla uniforme
 double dpe = 0;
 double deltaR = 0;
@@ -58,7 +59,7 @@ public:
 
         for (int i = 0; i<N+1;i++){ //Definició de el vector r_w
             rw[i] = Rint + (i)*deltaR;
-           // cout << rw[i] << "\n";
+            //cout << rw[i] << "\n";
         }
         rp[0] = rw[0] ;
         rp[N+1] = rw[N];
@@ -66,7 +67,7 @@ public:
             rp[i] = (rw[i] + rw[i-1])/2;
         }
        /* for(double & i : rp){
-            cout << i << "\n";
+           // cout << i << "\n";
         }*/
 
         for (int i = 0; i<N+1;i++){ // definició de les arees laterals (parets entre Volumns de control)
@@ -84,7 +85,7 @@ class Mapa_inicial { //Initial temp map deffinition class
 public:
 
     Mapa_inicial(){ //Definim el mapa inicial de temperatures
-        for(double & i : T){
+        for(double & i : T_n){
             i = Tstart;
             //cout << i <<"\n";
           //  T_n[i] = T[i] + 10; // Ens assegurem que per la primera iteració no es compleix el criteri d'acceptació
@@ -140,16 +141,46 @@ public:
         }
     }
 
-    void TDMA (){ }
+    static void TDMA (){
+        P[0] = a_E[0]/a_P[0];
+        R[0] = b_P[0]/a_P[0];
+        for (int i = 1; i<N+1;i++){
+            P[i] = (a_E[i])/(a_P[i] - a_W[i] * P[i-1]);
+            R[i] = (b_P[i] + a_W[i] * R[i-1])/(a_P[i] - a_W[i]*P[i-1]);
+        }
+        P[N+1] = 0;
+        R[N+1] = (b_P[N+1] + a_W[N+1] * R[N])/(a_P[N+1] - a_W[N+1]*P[N]);
+
+        int cont = 0;
+        while (true){
+            if(norma(T_n,T)){
+                //cout << cont << "\n";
+                break;
+            }
+            else{
+                for (int i = 0; i<(N+2); i++){
+                    T[i] = T_n[i];
+                }
+                T_n[0] = P[0]*T[1] + R[0];
+                for (int i = 1; i<N+1;i++){
+                    T_n[i] = P[i]*T[i+1] + R[i];
+                }
+                T_n[N+1] = R[N+1];
+            }
+            cont++;
+        }
+    }
     static void Qfin (){
         Q_f = 0;
+        Q_base_fin = 0;
 
         for (int i = 1 ; i<N+1;i++){
             Q_f += alfa_exterior*(T_n[i]-Text)*Ap[i-1];
         }
         Q_f += alfa_extrem * (T_n[N+1] - Text) * 2 * M_PI * Rext * ef;
         // Q_f *= nf;
-        Q_base_fin  = - lambda_f*((T_n[1]-T_n[0])/dpe) * (2 * M_PI * Rint * ef);
+        Q_base_fin  = - lambda_f*((T_n[1]-T_n[0])/dpe) * (2 * M_PI * Rint * ef) ;
+
 
     }
     static void Qbody (){
@@ -161,8 +192,8 @@ public:
         for (int i = 0; i< N+2;i++){
             T_cache +=pow((T_1[i]-T_2[i]),2.0);
             }
-        cout << sqrt(T_cache) << "\n";
-        if (sqrt(T_cache) >= delta){
+        //cout << sqrt(T_cache) << "\n";
+        if (sqrt(T_cache) > delta){
             done = false;
         }
         return done;
@@ -177,10 +208,10 @@ int main() {
     Mapa_inicial map;
     Coefs_discrtitzacio coef;
     Solver solver;
-    Solver::gauss_seidel();
+    Solver::TDMA();
 
     for (double i : T){
-     // cout << i << "\n";
+        cout << i << "\n";
     }
 
     Solver::Qfin();
