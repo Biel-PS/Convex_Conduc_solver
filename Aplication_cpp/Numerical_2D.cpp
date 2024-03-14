@@ -13,7 +13,7 @@ const int N = 1000; //Number of divisions in vertical axis (rows)
 const int M = 100; // Number of divisions in horizontal axis (columns)
 
 const double delta_convergence = 1E-9; //Convergence criteria
-
+//
 const double delta_t = 0.001; // Time increment [s]
 const double t_init = 0; // initial time [s]
 const double t_end = 10; // end time [s]
