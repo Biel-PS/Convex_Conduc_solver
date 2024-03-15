@@ -9,87 +9,77 @@ using namespace std;
 // and right are all known data.
 
 //NUMRICAL PARAMETERS
-const int N = 1000; //Number of divisions in vertical axis (rows)
-const int M = 100; // Number of divisions in horizontal axis (columns)
+    //Mesh parameters
+    const int N = 1000; //Number of divisions in vertical axis (rows)
+    const int M = 100; // Number of divisions in horizontal axis (columns)
+    const int Num_materials = 1; // Specify the number of materials in the grid
+    //NOTE: the boundary_material_coordinates only works for rectangular distributions of material within the control surface.
+    const double boundary_material_coordinates[Num_materials][2][2] = {0}; // Specify the boundary of each material as [material][start and finish row][start and finish column]
+    const double rho[Num_materials] = {0}; //rho is suposed constant with T and t
+    const double Cp[Num_materials] = {0}; //Cp is suposed constant with T and t
 
-const double delta_convergence = 1E-9; //Convergence criteria
-//
-const double delta_t = 0.001; // Time increment [s]
-const double t_init = 0; // initial time [s]
-const double t_end = 10; // end time [s]
+    //Temporal and convergence parameters
+    const double delta_convergence = 1E-9; //Convergence criteria
+    const double delta_t = 0.001; // Time increment [s]
+    const double t_init = 0; // initial time [s]
+    const double t_end = 10; // end time [s]
+    const double beta = 0.5; // =0 explícit, =0.5 Charles-Nicholson, = 1 Implícit
+    const double relaxation = 1;
 
-//FISICALPARAMETERS
-const double H = 2; // Height of the square plane
-const double L = 2; // Length of the square plane
-const double W = 0; // Profundity of the square plane in case a 3d case with 2d heat transfer is wanted
+//FISICAL PARAMETERS
+    //Geometrical parameters
+    const double H = 2; // Height of the square plane
+    const double L = 2; // Length of the square plane
+    const double W = 0; // Profundity of the square plane in case a 3d case with 2d heat transfer is wanted
 
-const double Tnorth = 200; // Temperature in the north wall
-const double Tsouth = 100;// Temperature in the south wall
-const double Teast = 50; // Temperature in the east wall
-const double Twest = 80; // Temeprature in the west wall
+    //External convection temperatures in the boundary
+    const double Tnorth = 200; // Temperature in the north wall
+    const double Tsouth = 100;// Temperature in the south wall
+    const double Teast = 50; // Temperature in the east wall
+    const double Twest = 80; // Temeprature in the west wall
+    //External convection constants in the boundary
+    const double alfa_n = 0; //north wall
+    const double alfa_s = 0; //south wall
+    const double alfa_e = 100; //east wall
+    const double alfa_w = 100; //west wall
 
-// const double initial_temp_map[] = []; // IN CASE THE INITIAL MAP IS DISCRETIZED, IT WOULD BE PUT IN HERE
-const double Tstart = 100; // INITIAL MAP IN CASE ALL THE NODES AT THE SAME TEMP AT T = 0;
+    //Initial temperature map
+    //const double initial_temp_map[] = []; // IN CASE THE INITIAL MAP IS DISCRETIZED, IT WOULD BE PUT IN HERE
+    const double Tstart = 100; // INITIAL MAP IN CASE ALL THE NODES AT THE SAME TEMP AT T = 0;
 
-double lambda_f[] = []; // lambda of the material (homogeneous case) [a_nT^n,...a_1T,a_0] (function of T)
-const double lambda_f = 100;
-const double alfa_exterior = 200; //alpha in the length of the fin with outter fluid
-const double alfa_extrem = 0; //alpha in the end of fin
-const double nf = 163; //Number of fins
+    //Deffinition of the lambda parameter in heach material
+    const int max_lambda_degree = 0; // degree of the max polynomial lambda (if its a constant: = 0), if its a line = 1, etc
+    const double lambda_f[Num_materials][max_lambda_degree + 1] = {0}; //lambda of each material [material][a_0,a_1*T,a_2*T^2,...] (function of T)
+
 
 // DEFFINE VECTOR LENGTH AND OPERATION VARIABLES
-double T[N+2] = {0};
-double T_n[N+2] = {0};
-double rw[N+1] = {0}; //fronteres entre volumns de control i extrems
-double rp[N+2] = {0};
-double a_E[N+2] = {0};
-double a_W[N+2] = {0};
-double a_P[N+2] = {0};
-double b_P[N+2] = {0};
-double P[N+2] = {0};
-double R[N+2] = {0};
+//NOTE: THE ORIGIN OF COORDINATES IS CONSIDERED IN THE INTERSECCION OF THE W AND S WALLS (BOTTOM LEFT VERTICE)!!!0
+    //Postion of heach control volume (ONLY central node)
+    double x_p [N][M] = {0};
+    double y_p [N][M] = {0};
 
-double Ap[N] = {0};
-double S[N+1] = {0};
-double dpw = 0; // malla uniforme
-double dpe = 0;
-double deltaR = 0;
-double Q_f = 0;
-double Q_b = 0;
-double Q_base_fin = 0;
+    //Position of every node (NODES AT VERTICES ARE GOING TO BE IGNORED)
+    double x_all [N+2][M+2] = {0};
+    double y_all [N+2][M+2] = {0};
+
+    //Temperature and needed coefficients
+    double T[2][N+2][M+2] = {0}; //Temperature [0 --> past delta time, 1--> actual delta time][row][column]
+    double a[N+2][M+2] = {0};
+    double bp[N+2][M+2] = {0};
+
+    //Surfaces and distance between nodes/surfaces (uniform mesh)
+    double S [N+1][M+1] = {0};
+    double dpv = 0; // distance between vertical nodes and surfaces
+    double dph = 0; // distance between horizontal nodes and surfaces
+
+//METHODS THAT WILL BE USED
+
+static void vec_deff (){ //initial vector deffinition method
 
 
-class vec { //Vector deffinition class
-public:
 
-    vec(){
-        deltaR = (Rext-Rint)/N;
-        dpw = deltaR/2; // per malla uniforme
-        dpe = deltaR/2;
+}
 
-        for (int i = 0; i<N+1;i++){ //Definició de el vector r_w
-            rw[i] = Rint + (i)*deltaR;
-            //cout << rw[i] << "\n";
-        }
-        rp[0] = rw[0] ;
-        rp[N+1] = rw[N];
-        for (int i = 1; i<N+1;i++){ //Definició de el vector r_w
-            rp[i] = (rw[i] + rw[i-1])/2;
-        }
-        /* for(double & i : rp){
-            // cout << i << "\n";
-         }*/
-
-        for (int i = 0; i<N+1;i++){ // definició de les arees laterals (parets entre Volumns de control)
-            S[i] = rw[i] * 2 *M_PI * ef ;
-            // cout << S[i] << "\n";
-        }
-        for (int i = 0; i<N;i++){ //definició area superior i inferior dels volumns de control
-            Ap[i] = 2 * M_PI * (pow(rw[i+1],2.0)-pow(rw[i],2.0));
-            // cout << Ap[i] << "\n";
-        }
-    }
-};
 
 class Mapa_inicial { //Initial temp map deffinition class
 public:
