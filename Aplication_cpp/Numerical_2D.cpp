@@ -114,6 +114,10 @@ static void Calc_coeff(){
 
 }
 
+static double harmonic_mean (double x, double y,double dxy,double dx1,double dy1){
+    return dxy/(dx1/x + dy1/y); //method that calculates the harmonic mean of two values.
+}
+
 /*
 class Mapa_inicial { //Initial temp map deffinition class
 public:
