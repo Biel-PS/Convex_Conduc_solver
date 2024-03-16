@@ -1,4 +1,4 @@
-define _USE_MATH_DEFINES
+//define _USE_MATH_DEFINES;
 
 #include <iostream>
 #include <cmath>
@@ -10,8 +10,8 @@ using namespace std;
 
 //NUMRICAL PARAMETERS
     //Mesh parameters
-    const int N = 1000; //Number of divisions in vertical axis (rows)
-    const int M = 100; // Number of divisions in horizontal axis (columns)
+    const int N = 200; //Number of divisions in vertical axis (rows)
+    const int M = 200; // Number of divisions in horizontal axis (columns)
     const int Num_materials = 1; // Specify the number of materials in the grid
     //NOTE: the boundary_material_coordinates only works for rectangular distributions of material within the control surface.
     const double boundary_material_coordinates[Num_materials][2][2] = {0}; // Specify the boundary of each material as [material][start and finish row][start and finish column]
@@ -30,7 +30,7 @@ using namespace std;
     //Geometrical parameters
     const double H = 2; // Height of the square plane
     const double L = 2; // Length of the square plane
-    const double W = 0; // Profundity of the square plane in case a 3d case with 2d heat transfer is wanted
+    const double W = 2; // Profundity of the square plane in case a 3d case with 2d heat transfer is wanted
 
     //External convection temperatures in the boundary
     const double Tnorth = 200; // Temperature in the north wall
@@ -58,7 +58,7 @@ using namespace std;
     double x_p [N][M] = {0};
     double y_p [N][M] = {0};
 
-    //Position of every node (NODES AT VERTICES ARE GOING TO BE IGNORED)
+    //Position of every node
     double x_all [N+2][M+2] = {0};
     double y_all [N+2][M+2] = {0};
 
@@ -68,19 +68,53 @@ using namespace std;
     double bp[N+2][M+2] = {0};
 
     //Surfaces and distance between nodes/surfaces (uniform mesh)
-    double S [N+1][M+1] = {0};
+    double S_h = 0;
+    double S_v = 0;
     double dpv = 0; // distance between vertical nodes and surfaces
     double dph = 0; // distance between horizontal nodes and surfaces
 
 //METHODS THAT WILL BE USED
 
-static void vec_deff (){ //initial vector deffinition method
+static void vec_geometric_deff (){ //initial vector deffinition method
+    //Compute the coordinates of every node
 
+    dph = (L/(2*M));
+    dpv = (H/(2*N));
 
+    for (int i = 0; i<N+2; i++){
+        x_all[i][0] = 0;
+        x_all[i][1] = x_all[i][0] + dph;
+        for (int j = 2; j<M+1; j++){
+            x_all[i][j] = x_all[i][j-1] + 2*dph;
+        }
+        x_all[i][M+1] = L;
+    }
+    for (int j = 0; j<M+2; j++){
+        y_all[0][j] = 0;
+        y_all[1][j] = y_all[0][j] + dpv;
+        for (int i = 2; i<N+1; i++){
+            y_all[i][j] = y_all[i-1][j] + 2*dpv;
+        }
+        y_all[N+1][j] = H;
+    }
+    /*  for (int i = 0; i<N+2; i++){
+       for (int j = 0; j<M+2; j++){
+           cout << "X: " << x_all[i][j] << "      Y: " <<y_all[i][j] <<"\n";
+       }
+   }*/
+
+    //Compute the surface of every n,s and w,e between control volumes.
+    S_h = 2*dph*W;
+    S_v = 2*dpv*W;
+   // cout << S_h << " " << S_v;
 
 }
 
+static void Calc_coeff(){
 
+}
+
+/*
 class Mapa_inicial { //Initial temp map deffinition class
 public:
 
@@ -199,11 +233,11 @@ public:
         return done;
     }
 };
-
+*/
 
 int main() {
     //for(int i = 0; i<sizeof(T);i++) {
-
+/*
     vec  v;
     Mapa_inicial map;
     Coefs_discrtitzacio coef;
@@ -218,7 +252,8 @@ int main() {
     Solver::Qbody();
 
     cout <<" Q_fin: " << Q_f <<"\n Q_body: "<<Q_b <<"\n Q_base_fin: "<<Q_base_fin << "\n Error : "<<abs(Q_base_fin - Q_f) ;
-
+    */
+    vec_geometric_deff();
 
     return 0;
 }
