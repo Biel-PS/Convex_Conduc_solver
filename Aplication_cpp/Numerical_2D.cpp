@@ -10,11 +10,17 @@ using namespace std;
 
 //NUMRICAL PARAMETERS
     //Mesh parameters
-    const int N = 200; //Number of divisions in vertical axis (rows)
-    const int M = 200; // Number of divisions in horizontal axis (columns)
-    const int Num_materials = 1; // Specify the number of materials in the grid
+    const int N = 10; //Number of divisions in vertical axis (rows)
+    const int M = 10; // Number of divisions in horizontal axis (columns)
+    const int Num_materials = 2; // Specify the number of materials in the grid
     //NOTE: the boundary_material_coordinates only works for rectangular distributions of material within the control surface.
-    const double boundary_material_coordinates[Num_materials][2][2] = {0}; // Specify the boundary of each material as [material][start and finish row][start and finish column]
+    const double boundary_material_coordinates[Num_materials][4] = {{0,int(N+1)/2,0,(M+1)},{int((N+1)/2) +1,(N+1),0,M+1}} ; // Specify the boundary of each material as [material][0 --> start and 1--> finish row, 2-->start and 3-->finish column]
+
+    //NOTE: THE START AND END ROW/COLUMN IN THIS VECTOR IS CONSIDERED OF THE MATERIAL
+    //THAT IS SPECIFIED, ROW 1 TO 2 MEANS THAT NODES IN ROW 1 AND 2 ARE OF THE SELECTED MATERIAL!!!Ç
+
+    //REMEMBER: there are N+1 rows and M+1 columns because of the wall nodes (zero is the beginning)!!
+
     const double rho[Num_materials] = {0}; //rho is suposed constant with T and t
     const double Cp[Num_materials] = {0}; //Cp is suposed constant with T and t
 
@@ -51,12 +57,15 @@ using namespace std;
     const int max_lambda_degree = 0; // degree of the max polynomial lambda (if its a constant: = 0), if its a line = 1, etc
     const double lambda_f[Num_materials][max_lambda_degree + 1] = {0}; //lambda of each material [material][a_0,a_1*T,a_2*T^2,...] (function of T)
 
+//Control variables
+    bool excep = false; //if this variable becomes true at any point, the program stops.
 
 // DEFFINE VECTOR LENGTH AND OPERATION VARIABLES
 //NOTE: THE ORIGIN OF COORDINATES IS CONSIDERED IN THE INTERSECCION OF THE W AND S WALLS (BOTTOM LEFT VERTICE)!!!0
     //Postion of heach control volume (ONLY central node)
     double x_p [N][M] = {0};
     double y_p [N][M] = {0};
+    int Material_matrix[N+2][M+2] = {0}; //assign the index of every material to each node
 
     //Position of every node
     double x_all [N+2][M+2] = {0};
@@ -107,6 +116,52 @@ static void vec_geometric_deff (){ //initial vector deffinition method
     S_h = 2*dph*W;
     S_v = 2*dpv*W;
    // cout << S_h << " " << S_v;
+
+   //Define the empty material matrix
+
+    for (int i = 0;i<N+2 ; i++){
+        for (int j = 0; j<M+2 ; j++){
+            Material_matrix[i][j] = -1;
+        }
+    }
+
+   //Compute the material matrix, where every node is assigned a material
+   for (int k = 0; k < Num_materials; k++ ) {
+       for (int i = 0; i < N + 2; i++) {
+           for (int j = 0; j < M + 2; j++) {
+
+               if(boundary_material_coordinates[k][0] <= i && boundary_material_coordinates[k][1] >= i &&
+               boundary_material_coordinates[k][2] <= j && boundary_material_coordinates[k][3] >= j)
+               {
+                   Material_matrix[i][j] = k;
+               }
+           }
+       }
+   }
+   //Print the matrix of material (JUST FOR DEBUGGING)
+    /*for (int i = N+1; i>=0; i--){
+        for (int j = 0; j<M+2; j++){
+            cout << Material_matrix[i][j] << " ";
+        }
+        cout << "\n";
+    }*/
+
+   //CONTROL THAT ALL THE MATERIAL TYPES HAVE BEEN ASSIGNED
+   for (int i = 0;i<N+2 ; i++){
+       if(excep){
+           break;
+       }
+       for (int j = 0; j<M+2 ; j++){
+            if(Material_matrix[i][j] == -1){
+                cout << "boundary_material_coordinates has an empty spot, the boundaries may be wrongly defined >:( \n";
+                excep = true;
+                break;
+            }
+       }
+   }
+
+
+
 
 }
 
