@@ -21,8 +21,8 @@ using namespace std;
 
     //REMEMBER: there are N+1 rows and M+1 columns because of the wall nodes (zero is the beginning)!!
 
-    const double rho[Num_materials] = {0}; //rho is suposed constant with T and t
-    const double Cp[Num_materials] = {0}; //Cp is suposed constant with T and t
+    const double rho[Num_materials] = {100,200}; //rho is suposed constant with T and t
+    const double Cp[Num_materials] = {50,80}; //Cp is suposed constant with T and t
 
     //Temporal and convergence parameters
     const double delta_convergence = 1E-9; //Convergence criteria
@@ -55,11 +55,11 @@ using namespace std;
 
     //Deffinition of the lambda parameter in heach material
     const int max_lambda_degree = 0; // degree of the max polynomial lambda (if its a constant: = 0), if its a line = 1, etc
-    const double lambda_f[Num_materials][max_lambda_degree + 1] = {0}; //lambda of each material [material][a_0,a_1*T,a_2*T^2,...] (function of T)
+    const double lambda_f[Num_materials][max_lambda_degree + 1] = {{50},{80}}; //lambda of each material [material][a_0,a_1*T,a_2*T^2,...] (function of T)
 
 //Control variables
     bool excep = false; //if this variable becomes true at any point, the program stops.
-
+    bool first_time_Tmap = true;
 // DEFFINE VECTOR LENGTH AND OPERATION VARIABLES
 //NOTE: THE ORIGIN OF COORDINATES IS CONSIDERED IN THE INTERSECCION OF THE W AND S WALLS (BOTTOM LEFT VERTICE)!!!0
     //Postion of heach control volume (ONLY central node)
@@ -73,6 +73,7 @@ using namespace std;
 
     //Temperature and needed coefficients
     double T[2][N+2][M+2] = {0}; //Temperature [0 --> past delta time, 1--> actual delta time][row][column]
+    double T_estimada[2][N+2][M+2] = {0};
     double a[N+2][M+2] = {0};
     double bp[N+2][M+2] = {0};
 
@@ -118,18 +119,16 @@ static void vec_geometric_deff (){ //initial vector deffinition method
    // cout << S_h << " " << S_v;
 
    //Define the empty material matrix
-
     for (int i = 0;i<N+2 ; i++){
         for (int j = 0; j<M+2 ; j++){
             Material_matrix[i][j] = -1;
         }
     }
-
    //Compute the material matrix, where every node is assigned a material
    for (int k = 0; k < Num_materials; k++ ) {
        for (int i = 0; i < N + 2; i++) {
            for (int j = 0; j < M + 2; j++) {
-
+                // set for the correct range the value of the index of the corresponding material
                if(boundary_material_coordinates[k][0] <= i && boundary_material_coordinates[k][1] >= i &&
                boundary_material_coordinates[k][2] <= j && boundary_material_coordinates[k][3] >= j)
                {
@@ -153,17 +152,37 @@ static void vec_geometric_deff (){ //initial vector deffinition method
        }
        for (int j = 0; j<M+2 ; j++){
             if(Material_matrix[i][j] == -1){
-                cout << "boundary_material_coordinates has an empty spot, the boundaries may be wrongly defined >:( \n";
+                    cout << "ERROR 01 :boundary_material_coordinates has an empty spot, the boundaries may be wrongly defined ! \n";
                 excep = true;
                 break;
             }
        }
    }
-
-
-
-
 }
+
+static void Mapa_inicial (){
+    for (int i = 0; i < N + 2; i++) {
+        for (int j = 0; j < M + 2; j++) {
+            T[0][N][M] = Tstart;
+        }
+    }
+}
+static void Mapa_estimat (){
+    for (int i = 0; i < N + 2; i++) {
+        for (int j = 0; j < M + 2; j++) {
+            T_estimada[1][N][M] = T[0][N][M];
+        }
+    }
+}
+
+static void Conductivitat_coef_discretitzacio (){
+    for (int i = 0; i < N + 2; i++) {
+        for (int j = 0; j < M + 2; j++) {
+
+        }
+    }
+}
+
 
 static void Calc_coeff(){
 
@@ -295,24 +314,10 @@ public:
 */
 
 int main() {
-    //for(int i = 0; i<sizeof(T);i++) {
-/*
-    vec  v;
-    Mapa_inicial map;
-    Coefs_discrtitzacio coef;
-    Solver solver;
-    Solver::TDMA();
 
-    for (double i : T){
-        cout << i << "\n";
-    }
-
-    Solver::Qfin();
-    Solver::Qbody();
-
-    cout <<" Q_fin: " << Q_f <<"\n Q_body: "<<Q_b <<"\n Q_base_fin: "<<Q_base_fin << "\n Error : "<<abs(Q_base_fin - Q_f) ;
-    */
     vec_geometric_deff();
+    Mapa_inicial();
+    Mapa_estimat();
 
     return 0;
 }
