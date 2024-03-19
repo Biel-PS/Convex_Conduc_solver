@@ -11,25 +11,26 @@ using namespace std;
 //NUMRICAL PARAMETERS
     //Mesh parameters
     const int N = 10; //Number of divisions in vertical axis (rows)
-    const int M = 10; // Number of divisions in horizontal axis (columns)
+    const int M = 10; // Number of divisions in horizontal axis (0umns)
     const int Num_materials = 2; // Specify the number of materials in the grid
     //NOTE: the boundary_material_coordinates only works for rectangular distributions of material within the control surface.
-    const double boundary_material_coordinates[Num_materials][4] = {{0,int(N+1)/2,0,(M+1)},{int((N+1)/2) +1,(N+1),0,M+1}} ; // Specify the boundary of each material as [material][0 --> start and 1--> finish row, 2-->start and 3-->finish column]
+    const double boundary_material_coordinates[Num_materials][4] = {{0,int(N+1)/2,0,(M+1)},{int((N+1)/2) +1,(N+1),0,M+1}} ; // Specify the boundary of each material as [material][0 --> start and 1--> finish row, 2-->start and 3-->finish 0umn]
 
-    //NOTE: THE START AND END ROW/COLUMN IN THIS VECTOR IS CONSIDERED OF THE MATERIAL
+    //NOTE: THE START AND END ROW/0UMN IN THIS VECTOR IS CONSIDERED OF THE MATERIAL
     //THAT IS SPECIFIED, ROW 1 TO 2 MEANS THAT NODES IN ROW 1 AND 2 ARE OF THE SELECTED MATERIAL!!!Ç
 
-    //REMEMBER: there are N+1 rows and M+1 columns because of the wall nodes (zero is the beginning)!!
+    //REMEMBER: there are N+1 rows and M+1 0umns because of the wall nodes (zero is the beginning)!!
 
     const double rho[Num_materials] = {100,200}; //rho is suposed constant with T and t
     const double Cp[Num_materials] = {50,80}; //Cp is suposed constant with T and t
-
+    const double qv_p[Num_materials] = {10e6,50e6};
+    
     //Temporal and convergence parameters
     const double delta_convergence = 1E-9; //Convergence criteria
     const double delta_t = 0.001; // Time increment [s]
     const double t_init = 0; // initial time [s]
     const double t_end = 10; // end time [s]
-    const double beta = 0.5; // =0 explícit, =0.5 Charles-Nicholson, = 1 Implícit
+    const double Beta = 0.5; // =0 explícit, =0.5 Charles-Nicholson, = 1 Implícit
     const double relaxation = 1;
 
 //FISICAL PARAMETERS
@@ -62,6 +63,7 @@ using namespace std;
     bool first_time_Tmap = true;
 // DEFFINE VECTOR LENGTH AND OPERATION VARIABLES
 //NOTE: THE ORIGIN OF COORDINATES IS CONSIDERED IN THE INTERSECCION OF THE W AND S WALLS (BOTTOM LEFT VERTICE)!!!0
+   
     //Postion of heach control volume (ONLY central node)
     double x_p [N][M] = {0};
     double y_p [N][M] = {0};
@@ -72,18 +74,26 @@ using namespace std;
     double y_all [N+2][M+2] = {0};
 
     //Temperature and needed coefficients
-    double T[2][N+2][M+2] = {0}; //Temperature [0 --> past delta time, 1--> actual delta time][row][column]
+    double T[2][N+2][M+2] = {0}; //Temperature [0 --> past delta time, 1--> actual delta time][row][0umn]
     double T_estimada[2][N+2][M+2] = {0};
-    double a[N+2][M+2] = {0};
-    double bp[N+2][M+2] = {0};
+    double Q_p[2][N+2][M+2] = {0};    
+   
+    
+    /* double a[N+2][M+2] = {0};
+    double bp[N+2][M+2] = {0};*/
 
     //Surfaces and distance between nodes/surfaces (uniform mesh)
     double S_h = 0;
     double S_v = 0;
+    double V_p = 0;
     double dpv = 0; // distance between vertical nodes and surfaces
     double dph = 0; // distance between horizontal nodes and surfaces
 
 //METHODS THAT WILL BE USED
+
+double harmonic_mean (double x, double y,double dxy,double dx1,double dy1){
+    return dxy/(dx1/x + dy1/y); //method that calculates the harmonic mean of two values.
+}
 
 static void vec_geometric_deff (){ //initial vector deffinition method
     //Compute the coordinates of every node
@@ -116,6 +126,7 @@ static void vec_geometric_deff (){ //initial vector deffinition method
     //Compute the surface of every n,s and w,e between control volumes.
     S_h = 2*dph*W;
     S_v = 2*dpv*W;
+    V_p = dpv*dph*W;
    // cout << S_h << " " << S_v;
 
    //Define the empty material matrix
@@ -171,14 +182,121 @@ static void Mapa_estimat (){
     for (int i = 0; i < N + 2; i++) {
         for (int j = 0; j < M + 2; j++) {
             T_estimada[1][N][M] = T[0][N][M];
+            Q_p[0][i][j] = Q_p[1][i][j];
         }
     }
 }
 
-static void Conductivitat_coef_discretitzacio (){
-    for (int i = 0; i < N + 2; i++) {
-        for (int j = 0; j < M + 2; j++) {
+static void solver_gauss_seidel (){
+    // Define method variables
+    double dpv_half = dpv/2,dph_half = dph/2;
 
+    // Defne the coefficients
+    double a_N = 0, a_E = 0, a_S = 0, a_W = 0, a_p = 0,b_p = 0;
+    //lambdas at surface between nodes
+    double lam_n = 0, lam_e = 0, lam_s = 0, lam_w = 0;
+    //lambdas at the contiguous nodes
+    double lam_p = 0,lam_E = 0, lam_W = 0, lam_N = 0, lam_S = 0;
+    
+    //Compute coefficient for boundary nodes at EAST AND WEST sides
+    for (int i = 1; i < N + 1; i++) {
+            //Compute lambda at the WEST BOUNDARY
+            lam_p = 0,lam_E = 0, lam_W = 0, lam_N = 0, lam_S = 0;
+            for (int k = 0; k< max_lambda_degree+1; k++){
+                lam_p += lambda_f[Material_matrix[i][0]][k] + pow(T[1][i][0],k);
+                lam_E += lambda_f[Material_matrix[i][1]][k] + pow(T[1][i][1],k);
+            }
+            lam_e = harmonic_mean(lam_p,lam_E,dph,dph_half,dph_half);
+
+            a_E = lam_e/dph;
+            a_p = a_E + alfa_w;
+            b_p = alfa_w * Twest;
+
+            //We compute the temperature
+            T[1][i][0] = (a_E* T[1][i][1] +  b_p)/a_p;
+
+            //COMPUTE LAMNDA AT THE EAST BOUNDARY
+
+        lam_p = 0,lam_E = 0, lam_W = 0, lam_N = 0, lam_S = 0;
+        for (int k = 0; k< max_lambda_degree+1; k++){
+            lam_p += lambda_f[Material_matrix[i][M+1]][k] + pow(T[1][i][M+1],k);
+            lam_W += lambda_f[Material_matrix[i][M]][k] + pow(T[1][i][M],k);
+        }
+        lam_w = harmonic_mean(lam_p,lam_W,dph,dph_half,dph_half);
+
+        a_W = lam_w/dph;
+        a_p = a_W + alfa_e;
+        b_p = alfa_e * Teast;
+
+        //We compute the temperature
+        T[1][i][M+1] = (a_W* T[1][i][M] +  b_p)/a_p;
+    }
+    
+    // Compute the coefficients at the NORTH and South side
+
+    for (int j = 1; j < M+1; j++) {
+        //Compute lambda at the NORTH BOUNDARY
+        lam_p = 0,lam_E = 0, lam_W = 0, lam_N = 0, lam_S = 0;
+        for (int k = 0; k< max_lambda_degree+1; k++){
+            lam_p += lambda_f[Material_matrix[M+1][j]][k] + pow(T[1][M+1][j],k);
+            lam_S += lambda_f[Material_matrix[M][j]][k] + pow(T[1][M][j],k);
+        }
+        lam_s = harmonic_mean(lam_p,lam_S,dpv,dpv_half,dpv_half);
+
+        a_S = lam_s/dpv;
+        a_p = a_S + alfa_n;
+        b_p = alfa_n * Tnorth;
+
+        //We compute the temperature
+        T[1][M+1][j] = (a_S* T[1][M][j] +  b_p)/a_p;
+
+        //COMPUTE LAMNDA AT THE SOUTH BOUNDARY
+
+        lam_p = 0,lam_E = 0, lam_W = 0, lam_N = 0, lam_S = 0;
+        for (int k = 0; k< max_lambda_degree+1; k++){
+            lam_p += lambda_f[Material_matrix[0][j]][k] + pow(T[1][0][j],k);
+            lam_N += lambda_f[Material_matrix[1][j]][k] + pow(T[1][1][j],k);
+        }
+        lam_n = harmonic_mean(lam_p,lam_N,dpv,dph_half,dph_half);
+
+        a_N = lam_n/dpv;
+        a_p = a_N + alfa_s;
+        b_p = alfa_s * Tsouth;
+
+        //We compute the temperature
+        T[1][0][j] = (a_N* T[1][1][j] +  b_p)/a_p;
+    }
+    
+    // Compute coefficients for the internal nodes
+    for (int i = 1; i < N + 1; i++) {
+        for (int j = 1; j < M + 1; j++) {
+            //Compute lambda at the node
+            lam_p = 0,lam_E = 0, lam_W = 0, lam_N = 0, lam_S = 0;
+            for (int k = 0; k< max_lambda_degree+1; k++){
+              lam_p += lambda_f[Material_matrix[i][j]][k] + pow(T[1][i][j],k);
+              lam_E += lambda_f[Material_matrix[i][j+1]][k] + pow(T[1][i][j+1],k);
+              lam_N += lambda_f[Material_matrix[i+1][j]][k] + pow(T[1][i+1][j],k);
+              lam_W += lambda_f[Material_matrix[i][j-1]][k] + pow(T[1][i][j-1],k);
+              lam_S += lambda_f[Material_matrix[i-1][j]][k] + pow(T[1][i-1][j],k);
+            }
+            lam_n = harmonic_mean(lam_p,lam_N,dpv,dpv_half,dpv_half);
+            lam_e = harmonic_mean(lam_p,lam_E,dph,dph_half,dph_half);
+            lam_s = harmonic_mean(lam_p,lam_N,dpv,dpv_half,dpv_half);
+            lam_w = harmonic_mean(lam_p,lam_W,dph,dph_half,dph_half);
+
+            a_E = Beta * lam_e * S_h/dph;
+            a_S = Beta * lam_s * S_v/dpv;
+            a_W = Beta * lam_w * S_h/dph;
+            a_N = Beta * lam_n * S_v/dpv;
+            
+            a_p = a_E + a_W +a_N + a_S + rho[Material_matrix[i][j]] * V_p * Cp[Material_matrix[i][j]] / delta_t;
+            b_p = qv_p[Material_matrix[i][j]] * V_p + rho[Material_matrix[i][j]] * Cp[Material_matrix[i][j]] * T[1][i][j] / delta_t + (1+Beta) * Q_p[0][i][j];
+            Q_p[1][i][j] = ((-1*(T[0][i][j-1] - T[0][i][j]))*a_W - (-1*(T[0][i][j+1] - T[0][i][j]))*a_E +
+                    (-1*(T[0][i-1][j] - T[0][i][j])) * a_S + ((-1*(T[0][i+1][j] - T[0][i][j]))*a_N ))/Beta + qv_p[Material_matrix[i][j]] * V_p;
+            
+            //We compute the temperature
+            
+            T[1][i][j] = (a_E* T[1][i][j+1] + a_W* T[1][i][j-1] + a_S * T[1][i-1][j] +  a_N*T[1][i+1][j]+ b_p)/a_p;
         }
     }
 }
@@ -188,9 +306,6 @@ static void Calc_coeff(){
 
 }
 
-static double harmonic_mean (double x, double y,double dxy,double dx1,double dy1){
-    return dxy/(dx1/x + dy1/y); //method that calculates the harmonic mean of two values.
-}
 
 /*
 class Mapa_inicial { //Initial temp map deffinition class
@@ -318,6 +433,7 @@ int main() {
     vec_geometric_deff();
     Mapa_inicial();
     Mapa_estimat();
+    solver_gauss_seidel();
 
     return 0;
 }
