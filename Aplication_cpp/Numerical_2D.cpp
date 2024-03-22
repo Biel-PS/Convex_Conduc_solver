@@ -11,8 +11,8 @@ using namespace std;
 
 //NUMRICAL PARAMETERS
     //Mesh parameters
-    const int N = 100; //Number of divisions in vertical axis (rows)
-    const int M = 100;// Number of divisions in horizontal axis (0umns)
+    const int N = 120; //Number of divisions in vertical axis (rows)
+    const int M = 120;// Number of divisions in horizontal axis (0umns)
     const int Num_materials = 4; // Specify the number of materials in the grid
 
     const double p_1[2] = {0.50,0.40};
@@ -39,7 +39,7 @@ using namespace std;
     
     //Temporal and convergence parameters
     const double delta_convergence = 1E-9; //Convergence criteria
-    const double delta_t = 0.3; // Time increment [s]
+    const double delta_t = 1; // Time increment [s]
     const double t_init = 0; // initial time [s]
     double t_actual = t_init;
     const double t_end = 5000; // end time [s]
@@ -54,10 +54,10 @@ using namespace std;
     const double Teast = 100; // Temperature in the east wall
     const double Twest = 33; // Temeprature in the west wall
     //External convection constants in the boundary
-    const double alfa_n = 100; //north wall
-    const double alfa_s = 100; //south wall
-    const double alfa_e = 9; //east wall
-    const double alfa_w = 100; //west wall
+    const double alfa_n = 0; //north wall
+    const double alfa_s = 0; //south wall
+    const double alfa_e = 0; //east wall
+    const double alfa_w = 9; //west wall
 
     const double q_w = 54.55; //[W/m2]
 
@@ -284,8 +284,8 @@ static void solver_gauss_seidel (){
                 a_p = a_W + a_N + alfa_e + alfa_s;
                 b_p = alfa_s*Tsouth + alfa_e*alfa_e;
 
-                //T [1][0][M+1] = (a_W * T[1][0][M] + a_N*T[1][1][M+1] + b_p)/a_p;
-                T [1][0][M+1] =Tsouth;
+                T [1][0][M+1] = (a_W * T[1][0][M] + a_N*T[1][1][M+1] + b_p)/a_p;
+                //T [1][0][M+1] =Tsouth;
             case 2: // top left vertice
 
                 lam_p = 0,lam_E = 0, lam_S = 0;
@@ -483,8 +483,8 @@ int main() {
 //        }
 //    }
 
-    for (int i = 0; i < N + 2; i++) {
-        for (int j = 0; j < M + 2; j++) {
+   for (int i = N+1; i>=0; i--){
+       for (int j = 0; j<M+2; j++){
             Tempfile << T[1][i][j] << ",";
             pos_file_x << x_all[i][j] << ",";
             pos_file_y << y_all[i][j] << ",";
