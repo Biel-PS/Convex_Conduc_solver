@@ -2,8 +2,8 @@
 
 
 #include <iostream>
+#include <fstream>
 #include <cmath>
-#include <complex>
 using namespace std;
 // CASE FOR A 2D SECTION (EXAMPLE FROM LESON) by BIEL PUJADAS SURIOL, started: 15/03/2024
 // This case its being dessigned as a square that can be discretized and where the temperatures at the top, bottom, left
@@ -11,8 +11,8 @@ using namespace std;
 
 //NUMRICAL PARAMETERS
     //Mesh parameters
-    const int N = 50; //Number of divisions in vertical axis (rows)
-    const int M = 50;// Number of divisions in horizontal axis (0umns)
+    const int N = 100; //Number of divisions in vertical axis (rows)
+    const int M = 100;// Number of divisions in horizontal axis (0umns)
     const int Num_materials = 4; // Specify the number of materials in the grid
 
     const double p_1[2] = {0.50,0.40};
@@ -44,7 +44,7 @@ using namespace std;
     double t_actual = t_init;
     const double t_end = 5000; // end time [s]
     const double Beta = 0.5; // =0 explícit, =0.5 Charles-Nicholson, = 1 Implícit
-    const double relaxation = 0;
+    const double relaxation = 1.05;
 
 //FISICAL PARAMETERS
 
@@ -426,7 +426,7 @@ static void solver_gauss_seidel (){
             
             //We compute the temperature
             
-            T[1][i][j] = (a_E* T[1][i][j+1] + a_W* T[1][i][j-1] + a_S * T[1][i-1][j] +  a_N*T[1][i+1][j]+ b_p)/a_p;
+            T[1][i][j] = T[1][i][j] + relaxation*((a_E* T[1][i][j+1] + a_W* T[1][i][j-1] + a_S * T[1][i-1][j] +  a_N*T[1][i+1][j]+ b_p)/a_p - T[1][i][j]);
         }
 
     }
@@ -467,12 +467,36 @@ int main() {
         t_actual += delta_t;
     }
 
-    for (int i = N+1; i>=0; i--){
-        cout << "\n";
-        for (int j = 0; j<M+2; j++){
-            cout << T[1][i][j] << " ";
+    std::ofstream Tempfile;
+    std::ofstream pos_file_x;
+    std::ofstream pos_file_y;
+
+    Tempfile.open ("Temp_map.csv");
+    pos_file_x.open ("posx_map.csv");
+    pos_file_y.open ("posy_map.csv");
+
+
+//    for (int i = N+1; i>=0; i--){
+//        cout << "\n";
+//        for (int j = 0; j<M+2; j++){
+//            cout << T[1][i][j] << " ";
+//        }
+//    }
+
+    for (int i = 0; i < N + 2; i++) {
+        for (int j = 0; j < M + 2; j++) {
+            Tempfile << T[1][i][j] << ",";
+            pos_file_x << x_all[i][j] << ",";
+            pos_file_y << y_all[i][j] << ",";
         }
+        Tempfile << "\n";
+        pos_file_x << "\n";
+        pos_file_y << "\n";
     }
+
+    Tempfile.close();
+    pos_file_x.close();
+    pos_file_y.close();
 
 
     return 0;
