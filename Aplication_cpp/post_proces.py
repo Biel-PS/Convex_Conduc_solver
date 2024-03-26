@@ -1,3 +1,5 @@
+#POST PROCESSING MODULE by Biel P.S.
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd

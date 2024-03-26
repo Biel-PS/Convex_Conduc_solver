@@ -11,8 +11,8 @@ using namespace std;
 
 //NUMRICAL PARAMETERS
     //Mesh parameters
-    const int N = 120; //Number of divisions in vertical axis (rows)
-    const int M = 120;// Number of divisions in horizontal axis (0umns)
+    const int N = 50; //Number of divisions in vertical axis (rows)
+    const int M = 50;// Number of divisions in horizontal axis (0umns)
     const int Num_materials = 4; // Specify the number of materials in the grid
 
     const double p_1[2] = {0.50,0.40};
@@ -266,8 +266,8 @@ static void solver_gauss_seidel (){
                 a_p = a_E + a_N + alfa_w + alfa_s;
                 b_p = alfa_s*Tsouth + alfa_w*alfa_w;
 
-                //T [1][0][0] = (a_E * T[1][0][1] + a_N*T[1][1][0] + b_p)/a_p;
-                T [1][0][0]  = Tsouth; //isotermic wall
+                T [1][0][0] = (a_E * T[1][0][1] + a_N*T[1][1][0] + b_p)/a_p;
+                //T [1][0][0]  = Tsouth; //isotermic wall
             case 1: //bottom right vertice
                 lam_p = 0,lam_W = 0, lam_N = 0;
                 for (int k = 0; k< max_lambda_degree+1; k++){
@@ -459,14 +459,14 @@ int main() {
         first = true;
 
         if(cont%50== 0) {
-            cout << "Process at: " << (t_actual / (t_end + delta_t) * 100 ) << " %  \n";
+            cout << "Process at: " << round(t_actual / (t_end + delta_t) * 100 ) << " %  \n";
         }
-        cont++;
 
+        cont++;
         Next_delta_t();
         t_actual += delta_t;
     }
-
+    // Keep all the data in .csv files to later do the post-processing
     std::ofstream Tempfile;
     std::ofstream pos_file_x;
     std::ofstream pos_file_y;
@@ -476,12 +476,12 @@ int main() {
     pos_file_y.open ("posy_map.csv");
 
 
-//    for (int i = N+1; i>=0; i--){
-//        cout << "\n";
-//        for (int j = 0; j<M+2; j++){
-//            cout << T[1][i][j] << " ";
-//        }
-//    }
+    for (int i = N+1; i>=0; i--){
+        cout << "\n";
+        for (int j = 0; j<M+2; j++){
+            cout << T[1][i][j] << " ";
+        }
+    }
 
    for (int i = N+1; i>=0; i--){
        for (int j = 0; j<M+2; j++){
