@@ -49,5 +49,5 @@ with open('posy_map.csv') as posy:
 
 data = pd.DataFrame({'x': x_l, 'y': y_l, 'T': T_l})
 data_pivoted = data.pivot_table(index="y", columns="x",values= "T",sort = False)
-ax = sns.heatmap(data_pivoted)
+ax = sns.heatmap(data_pivoted,annot = True)
 plt.show()

@@ -203,6 +203,7 @@ static void vec_geometric_deff (){ //initial vector deffinition method
        }
    }
 }
+
 static void Next_delta_t (){
     for (int i = 0; i < N + 2; i++) {
         for (int j = 0; j < M + 2; j++) {
@@ -411,14 +412,14 @@ static void solver_gauss_seidel (){
             }
             lam_n = harmonic_mean(lam_p,lam_N,dpv,dpv_half,dpv_half);
             lam_e = harmonic_mean(lam_p,lam_E,dph,dph_half,dph_half);
-            lam_s = harmonic_mean(lam_p,lam_N,dpv,dpv_half,dpv_half);
+            lam_s = harmonic_mean(lam_p,lam_S,dpv,dpv_half,dpv_half);
             lam_w = harmonic_mean(lam_p,lam_W,dph,dph_half,dph_half);
 
             a_E = Beta * lam_e * S_h/dph;
             a_S = Beta * lam_s * S_v/dpv;
             a_W = Beta * lam_w * S_h/dph;
             a_N = Beta * lam_n * S_v/dpv;
-            
+
             a_p = a_E + a_W +a_N + a_S + rho[Material_matrix[i][j]] * V_p * Cp[Material_matrix[i][j]] / delta_t;
             b_p = qv_p[Material_matrix[i][j]] * V_p + V_p *rho[Material_matrix[i][j]] * Cp[Material_matrix[i][j]] * T[0][i][j] / delta_t + (1-Beta) * Q_p[0][i][j];
             Q_p[1][i][j] = ((-1*(T[0][i][j-1] - T[0][i][j]))*a_W - (-1*(T[0][i][j+1] - T[0][i][j]))*a_E  +
