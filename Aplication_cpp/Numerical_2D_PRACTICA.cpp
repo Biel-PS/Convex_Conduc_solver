@@ -310,15 +310,6 @@ static void solver_gauss_seidel (){
     for (int i = 0; i<4; i++) {
         switch (i) {
             case 0: // bottom left vertice
-               lam_p = 0,lam_E = 0, lam_N = 0;
-//                for (int k = 0; k< max_lambda_degree+1; k++){
-//                    lam_p += lambda_f[Material_matrix[0][0]][k] + pow(T[1][0][0],k);
-//                    lam_E += lambda_f[Material_matrix[0][1]][k] + pow(T[1][0][1],k);
-//                    lam_N += lambda_f[Material_matrix[1][0]][k] + pow(T[1][1][0],k);
-//                }
-//                lam_n = harmonic_mean(lam_p,lam_N,dpv,dpv_half,dpv_half);
-//                lam_e = harmonic_mean(lam_p,lam_E,dph,dph_half,dph_half);
-
                 lam_n = lamnda_horizontal_surface [0][0];
                 lam_e = lamnda_vertical_surface [0][0];
                 a_E = lam_e/dph_half;
@@ -329,15 +320,6 @@ static void solver_gauss_seidel (){
                 T [1][0][0] = (a_E * T[1][0][1] + a_N*T[1][1][0] + b_p)/a_p;
                 //T [1][0][0]  = Tsouth; //isotermic wall
             case 1: //bottom right vertice
-//                lam_p = 0,lam_W = 0, lam_N = 0;
-//                for (int k = 0; k< max_lambda_degree+1; k++){
-//                    lam_p += lambda_f[Material_matrix[0][M+1]][k] + pow(T[1][0][M+1],k);
-//                    lam_W += lambda_f[Material_matrix[0][M]][k] + pow(T[1][0][M],k);
-//                    lam_N += lambda_f[Material_matrix[1][M+1]][k] + pow(T[1][M+1][0],k);
-//                }
-//                lam_n = harmonic_mean(lam_p,lam_N,dpv,dpv_half,dpv_half);
-//                lam_w = harmonic_mean(lam_p,lam_w,dph,dph_half,dph_half);
-
                 lam_n = lamnda_horizontal_surface [0][M-1];
                 lam_w = lamnda_vertical_surface [0][M];
                 a_W = lam_w/dph_half;
@@ -348,15 +330,6 @@ static void solver_gauss_seidel (){
                 T [1][0][M+1] = (a_W * T[1][0][M] + a_N*T[1][1][M+1] + b_p)/a_p;
                 //T [1][0][M+1] =Tsouth;
             case 2: // top left vertice
-
-//                lam_p = 0,lam_E = 0, lam_S = 0;
-//                for (int k = 0; k< max_lambda_degree+1; k++){
-//                    lam_p += lambda_f[Material_matrix[N+1][0]][k] + pow(T[1][N+1][0],k);
-//                    lam_E += lambda_f[Material_matrix[N+1][1]][k] + pow(T[1][N+1][1],k);
-//                    lam_S += lambda_f[Material_matrix[N][0]][k] + pow(T[1][N][0],k);
-//                }
-//                lam_s = harmonic_mean(lam_p,lam_S,dpv,dpv_half,dpv_half);
-//                lam_e = harmonic_mean(lam_p,lam_E,dph,dph_half,dph_half);
 
                 lam_s = lamnda_horizontal_surface [N][0];
                 lam_e = lamnda_vertical_surface [N-1][0];
@@ -369,15 +342,6 @@ static void solver_gauss_seidel (){
                 T [1][N+1][0] = (a_E * T[1][N+1][1] + a_S*T[1][N][0] + b_p)/a_p;
 
             case 3: // top right vertice
-//                lam_p = 0,lam_W = 0, lam_S = 0;
-//                for (int k = 0; k< max_lambda_degree+1; k++){
-//                    lam_p += lambda_f[Material_matrix[N+1][M+1]][k] + pow(T[1][N+1][M+1],k);
-//                    lam_W += lambda_f[Material_matrix[N+1][M]][k] + pow(T[1][N+1][M],k);
-//                    lam_S += lambda_f[Material_matrix[N][M+1]][k] + pow(T[1][N][M+1],k);
-//                }
-//                lam_s = harmonic_mean(lam_p,lam_S,dpv,dpv_half,dpv_half);
-//                lam_w = harmonic_mean(lam_p,lam_W,dph,dph_half,dph_half);
-
                 lam_s = lamnda_horizontal_surface [N][M-1];
                 lam_w = lamnda_vertical_surface [N-1][M];
 
@@ -394,12 +358,7 @@ static void solver_gauss_seidel (){
     //Compute coefficient for boundary nodes at EAST AND WEST sides
     for (int i = 1; i < N + 1; i++) {
         //Compute lambda at the WEST BOUNDARY
-//        lam_p = 0,lam_E = 0, lam_W = 0, lam_N = 0, lam_S = 0;
-//        for (int k = 0; k< max_lambda_degree+1; k++){
-//            lam_p += lambda_f[Material_matrix[i][0]][k] + pow(T[1][i][0],k);
-//            lam_E += lambda_f[Material_matrix[i][1]][k] + pow(T[1][i][1],k);
-//        }
-//        lam_e = harmonic_mean(lam_p,lam_E,dph,dph_half,dph_half);
+
         lam_e = lamnda_vertical_surface[i-1][0];
         a_E = lam_e/dph_half;
         a_p = a_E + alfa_w;
@@ -408,21 +367,7 @@ static void solver_gauss_seidel (){
         //We compute the temperature
         T[1][i][0] = (a_E* T[1][i][1] +  b_p)/a_p;
 
-        //COMPUTE LAMNDA AT THE EAST BOUNDARY
-
-//        lam_p = 0,lam_E = 0, lam_W = 0, lam_N = 0, lam_S = 0;
-//        for (int k = 0; k< max_lambda_degree+1; k++){
-//            lam_p += lambda_f[Material_matrix[i][M+1]][k] + pow(T[1][i][M+1],k);
-//            lam_W += lambda_f[Material_matrix[i][M]][k] + pow(T[1][i][M],k);
-//        }
-//        lam_w = harmonic_mean(lam_p,lam_W,dph,dph_half,dph_half);
-//
-//        a_W = lam_w/dph_half;
-//        a_p = a_W + alfa_e;
-//        b_p = alfa_e * Teast;
-
-        //We compute the temperature
-        //  T[1][i][M+1] = (a_W* T[1][i][M] +  b_p)/a_p;
+        //We compute the temperature at WEST boundary
         T[1][i][M+1] = 8 + 0.005*t_actual;
     }
 
@@ -430,12 +375,7 @@ static void solver_gauss_seidel (){
 
     for (int j = 1; j < M+1; j++) {
         //Compute lambda at the NORTH BOUNDARY
-//        lam_p = 0,lam_S = 0;
-//        for (int k = 0; k< max_lambda_degree+1; k++){
-//            lam_p += lambda_f[Material_matrix[M+1][j]][k] + pow(T[1][M+1][j],k);
-//            lam_S += lambda_f[Material_matrix[M][j]][k] + pow(T[1][M][j],k);
-//        }
-//        lam_s = harmonic_mean(lam_p,lam_S,dpv,dpv_half,dpv_half);
+
         lam_s = lamnda_horizontal_surface[N][j-1];
         a_S = lam_s/dpv_half;
         a_p = a_S;
@@ -444,40 +384,13 @@ static void solver_gauss_seidel (){
         //We compute the temperature
         T[1][M+1][j] = (a_S* T[1][M][j] +  b_p)/a_p;
 
-        //COMPUTE LAMNDA AT THE SOUTH BOUNDARY
-
-//        lam_p = 0,lam_E = 0, lam_W = 0, lam_N = 0, lam_S = 0;
-//        for (int k = 0; k< max_lambda_degree+1; k++){
-//            lam_p += lambda_f[Material_matrix[0][j]][k] + pow(T[1][0][j],k);
-//            lam_N += lambda_f[Material_matrix[1][j]][k] + pow(T[1][1][j],k);
-//        }
-//        lam_n = harmonic_mean(lam_p,lam_N,dpv,dph_half,dph_half);
-//
-//        a_N = lam_n/dpv_half;
-//        a_p = a_N + alfa_s;
-//        b_p = alfa_s * Tsouth;
-
-        //We compute the temperature
-        //T[1][0][j] = (a_N* T[1][1][j] +  b_p)/a_p; //FOR NOT ISOTHERMAL
+        //COMPUTE TEMPERATURE AT THE SOUTH BOUNDARY
         T[1][0][j] = Tsouth; //FOR ISOTHERMAL WALL
     }
 
     // Compute coefficients for the internal nodes
     for (int i = 1; i < N + 1; i++) {
         for (int j = 1; j < M + 1; j++) {
-            //Compute lambda at the node
-//            lam_p = 0,lam_E = 0, lam_W = 0, lam_N = 0, lam_S = 0;
-//            for (int k = 0; k< max_lambda_degree+1; k++){
-//                lam_p += lambda_f[Material_matrix[i][j]][k] + pow(T[1][i][j],k);
-//                lam_E += lambda_f[Material_matrix[i][j+1]][k] + pow(T[1][i][j+1],k);
-//                lam_N += lambda_f[Material_matrix[i+1][j]][k] + pow(T[1][i+1][j],k);
-//                lam_W += lambda_f[Material_matrix[i][j-1]][k] + pow(T[1][i][j-1],k);
-//                lam_S += lambda_f[Material_matrix[i-1][j]][k] + pow(T[1][i-1][j],k);
-//            }
-//            lam_n = harmonic_mean(lam_p,lam_N,dpv,dpv_half,dpv_half);
-//            lam_e = harmonic_mean(lam_p,lam_E,dph,dph_half,dph_half);
-//            lam_s = harmonic_mean(lam_p,lam_S,dpv,dpv_half,dpv_half);
-//            lam_w = harmonic_mean(lam_p,lam_W,dph,dph_half,dph_half);
 
             lam_n = lamnda_horizontal_surface[i][j];
             lam_s = lamnda_horizontal_surface[i-1][j];
