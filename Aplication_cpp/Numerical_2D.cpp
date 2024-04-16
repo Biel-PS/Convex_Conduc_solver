@@ -427,7 +427,7 @@ static void solver_gauss_seidel (){
             
             //We compute the temperature
             
-            T[1][i][j] = T[1][i][j] + relaxation*((a_E* T[1][i][j+1] + a_W* T[1][i][j-1] + a_S * T[1][i-1][j] +  a_N*T[1][i+1][j]+ b_p)/a_p - T[1][i][j]);
+            T[1][i][j] = T[0][i][j] + relaxation*((a_E* T[1][i][j+1] + a_W* T[1][i][j-1] + a_S * T[1][i-1][j] +  a_N*T[1][i+1][j]+ b_p)/a_p - T[0][i][j]);
         }
 
     }

@@ -38,7 +38,7 @@ const double qv_p[Num_materials] = {0,0,0,0};
 
 //Temporal and convergence parameters
 const double delta_convergence = 1E-9; //Convergence criteria
-const double delta_t = 1; // Time increment [s]
+const double delta_t = 0.2; // Time increment [s]
 const double t_init = 0; // initial time [s]
 double t_actual = t_init;
 const double t_end = 5000; // end time [s]
@@ -48,9 +48,9 @@ const double relaxation = 1.05;
 //FISICAL PARAMETERS
 
 //External convection temperatures in the boundary
-const double Tnorth = 50; // Temperature in the north wall
+const double Tnorth = 0; // Temperature in the north wall
 const double Tsouth = 23;// Temperature in the south wall
-const double Teast = 100; // Temperature in the east wall
+const double Teast = 0; // Temperature in the east wall
 const double Twest = 33; // Temeprature in the west wall
 //External convection constants in the boundary
 const double alfa_n = 0; //north wall
@@ -304,8 +304,6 @@ static void solver_gauss_seidel (){
     //lambdas at surface between nodes
     double lam_n = 0, lam_e = 0, lam_s = 0, lam_w = 0;
     //lambdas at the contiguous nodes
-    double lam_p = 0,lam_E = 0, lam_W = 0, lam_N = 0, lam_S = 0;
-
     // Compute the vertex
     for (int i = 0; i<4; i++) {
         switch (i) {
@@ -367,7 +365,7 @@ static void solver_gauss_seidel (){
         //We compute the temperature
         T[1][i][0] = (a_E* T[1][i][1] +  b_p)/a_p;
 
-        //We compute the temperature at WEST boundary
+        //We compute the temperature at EAST boundary
         T[1][i][M+1] = 8 + 0.005*t_actual;
     }
 
@@ -409,7 +407,7 @@ static void solver_gauss_seidel (){
 
             //We compute the temperature
 
-            T[1][i][j] = T[1][i][j] + relaxation*((a_E* T[1][i][j+1] + a_W* T[1][i][j-1] + a_S * T[1][i-1][j] +  a_N*T[1][i+1][j]+ b_p)/a_p - T[1][i][j]);
+            T[1][i][j] = T[0][i][j] + relaxation*((a_E* T[1][i][j+1] + a_W* T[1][i][j-1] + a_S * T[1][i-1][j] +  a_N*T[1][i+1][j]+ b_p)/a_p - T[0][i][j]);
         }
 
     }
