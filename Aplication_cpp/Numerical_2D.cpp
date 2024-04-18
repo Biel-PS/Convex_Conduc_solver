@@ -1,4 +1,4 @@
-//NUMERICAL RESOLUTION FOR HEAT TRANSFER AND TEMP MAP OF A 4 MATERIAL SQUARE 2D BODY by Biel P.S.
+//define _USE_MATH_DEFINES;
 
 
 #include <iostream>
@@ -11,8 +11,8 @@ using namespace std;
 
 //NUMRICAL PARAMETERS
     //Mesh parameters
-    const int N = 50; //Number of divisions in vertical axis (rows)
-    const int M = 50;// Number of divisions in horizontal axis (0umns)
+    const int N = 150; //Number of divisions in vertical axis (rows)
+    const int M = 150;// Number of divisions in horizontal axis (0umns)
     const int Num_materials = 4; // Specify the number of materials in the grid
 
     const double p_1[2] = {0.50,0.40};
@@ -42,7 +42,7 @@ using namespace std;
     const double delta_t = 1; // Time increment [s]
     const double t_init = 0; // initial time [s]
     double t_actual = t_init;
-    const double t_end = 5000; // end time [s]
+    const double t_end = 1; // end time [s]
     const double Beta = 0.5; // =0 explícit, =0.5 Charles-Nicholson, = 1 Implícit
     const double relaxation = 1.05;
 
@@ -203,7 +203,6 @@ static void vec_geometric_deff (){ //initial vector deffinition method
        }
    }
 }
-
 static void Next_delta_t (){
     for (int i = 0; i < N + 2; i++) {
         for (int j = 0; j < M + 2; j++) {
@@ -252,23 +251,23 @@ static void solver_gauss_seidel (){
     for (int i = 0; i<4; i++) {
         switch (i) {
             case 0: // bottom left vertice
-                lam_p = 0,lam_E = 0, lam_N = 0;
-                for (int k = 0; k< max_lambda_degree+1; k++){
-                    lam_p += lambda_f[Material_matrix[0][0]][k] + pow(T[1][0][0],k);
-                    lam_E += lambda_f[Material_matrix[0][1]][k] + pow(T[1][0][1],k);
-                    lam_N += lambda_f[Material_matrix[1][0]][k] + pow(T[1][1][0],k);
-                }
-                lam_n = harmonic_mean(lam_p,lam_N,dpv,dpv_half,dpv_half);
-                lam_e = harmonic_mean(lam_p,lam_E,dph,dph_half,dph_half);
+//                lam_p = 0,lam_E = 0, lam_N = 0;
+//                for (int k = 0; k< max_lambda_degree+1; k++){
+//                    lam_p += lambda_f[Material_matrix[0][0]][k] + pow(T[1][0][0],k);
+//                    lam_E += lambda_f[Material_matrix[0][1]][k] + pow(T[1][0][1],k);
+//                    lam_N += lambda_f[Material_matrix[1][0]][k] + pow(T[1][1][0],k);
+//                }
+//                lam_n = harmonic_mean(lam_p,lam_N,dpv,dpv_half,dpv_half);
+//                lam_e = harmonic_mean(lam_p,lam_E,dph,dph_half,dph_half);
+//
+//
+//                a_E = lam_e/dph_half;
+//                a_N = lam_n/dpv_half;
+//                a_p = a_E + a_N + alfa_w + alfa_s;
+//                b_p = alfa_s*Tsouth + alfa_w*alfa_w;
 
-
-                a_E = lam_e/dph_half;
-                a_N = lam_n/dpv_half;
-                a_p = a_E + a_N + alfa_w + alfa_s;
-                b_p = alfa_s*Tsouth + alfa_w*alfa_w;
-
-                T [1][0][0] = (a_E * T[1][0][1] + a_N*T[1][1][0] + b_p)/a_p;
-                //T [1][0][0]  = Tsouth; //isotermic wall
+                //T [1][0][0] = (a_E * T[1][0][1] + a_N*T[1][1][0] + b_p)/a_p;
+                T [1][0][0]  = Tsouth; //isotermic wall
             case 1: //bottom right vertice
                 lam_p = 0,lam_W = 0, lam_N = 0;
                 for (int k = 0; k< max_lambda_degree+1; k++){
@@ -419,7 +418,7 @@ static void solver_gauss_seidel (){
             a_S = Beta * lam_s * S_v/dpv;
             a_W = Beta * lam_w * S_h/dph;
             a_N = Beta * lam_n * S_v/dpv;
-
+            
             a_p = a_E + a_W +a_N + a_S + rho[Material_matrix[i][j]] * V_p * Cp[Material_matrix[i][j]] / delta_t;
             b_p = qv_p[Material_matrix[i][j]] * V_p + V_p *rho[Material_matrix[i][j]] * Cp[Material_matrix[i][j]] * T[0][i][j] / delta_t + (1-Beta) * Q_p[0][i][j];
             Q_p[1][i][j] = ((-1*(T[0][i][j-1] - T[0][i][j]))*a_W - (-1*(T[0][i][j+1] - T[0][i][j]))*a_E  +
@@ -427,7 +426,7 @@ static void solver_gauss_seidel (){
             
             //We compute the temperature
             
-            T[1][i][j] = T[0][i][j] + relaxation*((a_E* T[1][i][j+1] + a_W* T[1][i][j-1] + a_S * T[1][i-1][j] +  a_N*T[1][i+1][j]+ b_p)/a_p - T[0][i][j]);
+            T[1][i][j] = T[1][i][j] + relaxation*((a_E* T[1][i][j+1] + a_W* T[1][i][j-1] + a_S * T[1][i-1][j] +  a_N*T[1][i+1][j]+ b_p)/a_p - T[1][i][j]);
         }
 
     }
@@ -460,14 +459,14 @@ int main() {
         first = true;
 
         if(cont%50== 0) {
-            cout << "Process at: " << round(t_actual / (t_end + delta_t) * 100 ) << " %  \n";
+            cout << "Process at: " << (t_actual / (t_end + delta_t) * 100 ) << " %  \n";
         }
-
         cont++;
+
         Next_delta_t();
         t_actual += delta_t;
     }
-    // Keep all the data in .csv files to later do the post-processing
+
     std::ofstream Tempfile;
     std::ofstream pos_file_x;
     std::ofstream pos_file_y;
