@@ -44,7 +44,7 @@ using namespace std;
     double t_actual = t_init;
     const double t_end = 5000; // end time [s]
     const double Beta = 0.5; // =0 explícit, =0.5 Charles-Nicholson, = 1 Implícit
-    const double relaxation = 1;
+    const double relaxation = 0.95;
 
 //FISICAL PARAMETERS
 
@@ -153,11 +153,12 @@ static void vec_geometric_deff (){ //initial vector deffinition method
         }
         y_all[N+1][j] = H;
     }
-// for (int i = 0; i<N+2; i++){
-//       for (int j = 0; j<M+2; j++){
-//           cout << "X: " << x_all[i][j] << "      Y: " <<y_all[i][j] <<"\n";
-//       }
-//   }
+//    for (int i = N+1; i>=0; i--){
+//        for (int j = 0; j<M+2; j++){
+//            cout << y_all[i][j] << " ";
+//        }
+//        cout << "\n";
+//    }
 
     //Compute the surface of every n,s and w,e between control volumes.
     S_h = dph*W;
@@ -210,6 +211,7 @@ static void Next_delta_t (){
     for (int i = 0; i < N + 2; i++) {
         for (int j = 0; j < M + 2; j++) {
             T[0][i][j] = T[1][i][j];
+            Q_p[0][i][j] = Q_p[1][i][j];
         }
     }
 
@@ -269,12 +271,12 @@ static void solver_gauss_seidel (){
                 //T [1][0][0] = (a_E * T[1][0][1] + a_N*T[1][1][0] + b_p)/a_p;
                 T [1][0][0]  = Tsouth; //isotermic wall
             case 1: //bottom right vertice
-                lam_p = 0,lam_W = 0, lam_N = 0;
-                for (int k = 0; k< max_lambda_degree+1; k++){
-                    lam_p += lambda_f[Material_matrix[0][M+1]][k] + pow(T[1][0][M+1],k);
-                    lam_W += lambda_f[Material_matrix[0][M]][k] + pow(T[1][0][M],k);
-                    lam_N += lambda_f[Material_matrix[1][M+1]][k] + pow(T[1][M+1][0],k);
-                }
+               // lam_p = 0,lam_W = 0, lam_N = 0;
+              //  for (int k = 0; k< max_lambda_degree+1; k++){
+                  //  lam_p += lambda_f[Material_matrix[0][M+1]][k] + pow(T[1][0][M+1],k);
+                    lam_W = lambda_f[Material_matrix[0][M]][0];// + pow(T[1][0][M],k);
+                    lam_N = lambda_f[Material_matrix[1][M+1]][0];// + pow(T[1][M+1][0],k);
+             //   }
                 lam_n = lam_N; //harmonic_mean(lam_p,lam_N,dpv,dpv_half,dpv_half);
                 lam_w = lam_W; //harmonic_mean(lam_p,lam_w,dph,dph_half,dph_half);
 
@@ -288,12 +290,12 @@ static void solver_gauss_seidel (){
                 //T [1][0][M+1] =Tsouth;
             case 2: // top left vertice
 
-                lam_p = 0,lam_E = 0, lam_S = 0;
-                for (int k = 0; k< max_lambda_degree+1; k++){
-                    lam_p += lambda_f[Material_matrix[N+1][0]][k] + pow(T[1][N+1][0],k);
-                    lam_E += lambda_f[Material_matrix[N+1][1]][k] + pow(T[1][N+1][1],k);
-                    lam_S += lambda_f[Material_matrix[N][0]][k] + pow(T[1][N][0],k);
-                }
+               // lam_p = 0,lam_E = 0, lam_S = 0;
+             //   for (int k = 0; k< max_lambda_degree+1; k++){
+                  //  lam_p += lambda_f[Material_matrix[N+1][0]][k] + pow(T[1][N+1][0],k);
+                    lam_E = lambda_f[Material_matrix[N+1][1]][0];// + pow(T[1][N+1][1],k);
+                    lam_S = lambda_f[Material_matrix[N][0]][0];// + pow(T[1][N][0],k);
+             //  }
                 lam_s = lam_S;//harmonic_mean(lam_p,lam_S,dpv,dpv_half,dpv_half);
                 lam_e = lam_E; //harmonic_mean(lam_p,lam_E,dph,dph_half,dph_half);
 
@@ -306,12 +308,12 @@ static void solver_gauss_seidel (){
                 T [1][N+1][0] = (a_E * T[1][N+1][1] + a_S*T[1][N][0] + b_p)/a_p;
 
             case 3: // top right vertice
-                lam_p = 0,lam_W = 0, lam_S = 0;
-                for (int k = 0; k< max_lambda_degree+1; k++){
-                    lam_p += lambda_f[Material_matrix[N+1][M+1]][k] + pow(T[1][N+1][M+1],k);
-                    lam_W += lambda_f[Material_matrix[N+1][M]][k] + pow(T[1][N+1][M],k);
-                    lam_S += lambda_f[Material_matrix[N][M+1]][k] + pow(T[1][N][M+1],k);
-                }
+             //   lam_p = 0,lam_W = 0, lam_S = 0;
+             //   for (int k = 0; k< max_lambda_degree+1; k++){
+                    lam_p = lambda_f[Material_matrix[N+1][M+1]][0];// + pow(T[1][N+1][M+1],k);
+                    lam_W = lambda_f[Material_matrix[N+1][M]][0];// + pow(T[1][N+1][M],k);
+                    lam_S = lambda_f[Material_matrix[N][M+1]][0];// + pow(T[1][N][M+1],k);
+            //    }
                 lam_s = lam_S;//harmonic_mean(lam_p,lam_S,dpv,dpv_half,dpv_half);
                 lam_w = lam_W; //harmonic_mean(lam_p,lam_W,dph,dph_half,dph_half);
 
@@ -329,14 +331,18 @@ static void solver_gauss_seidel (){
     //Compute coefficient for boundary nodes at EAST AND WEST sides
     for (int i = 1; i < N + 1; i++) {
             //Compute lambda at the WEST BOUNDARY
-            lam_p = 0,lam_E = 0, lam_W = 0, lam_N = 0, lam_S = 0;
-            for (int k = 0; k< max_lambda_degree+1; k++){
-                lam_p += lambda_f[Material_matrix[i][0]][k] + pow(T[1][i][0],k);
-                lam_E += lambda_f[Material_matrix[i][1]][k] + pow(T[1][i][1],k);
-            }
-            lam_e = lam_E;//harmonic_mean(lam_p,lam_E,dph,dph_half,dph_half);
+           // lam_p = 0,lam_E = 0, lam_W = 0, lam_N = 0, lam_S = 0;
+          //  for (int k = 0; k< max_lambda_degree+1; k++){
+               // lam_p = lambda_f[Material_matrix[i][0]][0];// + pow(T[1][i][0],k);
+                lam_E = lambda_f[Material_matrix[i][1]][0];// + pow(T[1][i][1],k);
+           // }
+            de = x_all[i][1]-x_all[i][0];
 
-            a_E = lam_e/(x_all[0][0]-x_all[0][1]);
+            lam_e = lam_E;//harmonic_mean(lam_p,lam_E,de,de/2,de/2);
+
+
+
+            a_E = lam_e/(de);
             a_p = a_E + alfa_w;
             b_p = alfa_w * Twest;
 
@@ -365,11 +371,11 @@ static void solver_gauss_seidel (){
 
     for (int j = 1; j < M+1; j++) {
         //Compute lambda at the NORTH BOUNDARY
-        lam_p = 0,lam_S = 0;
-        for (int k = 0; k< max_lambda_degree+1; k++){
-            lam_p += lambda_f[Material_matrix[M+1][j]][k] + pow(T[1][M+1][j],k);
-            lam_S += lambda_f[Material_matrix[M][j]][k] + pow(T[1][M][j],k);
-        }
+       // lam_p = 0,lam_S = 0;
+       // for (int k = 0; k< max_lambda_degree+1; k++){
+         //   lam_p += lambda_f[Material_matrix[M+1][j]][0];// + pow(T[1][M+1][j],k);
+            lam_S = lambda_f[Material_matrix[N][j]][0];// + pow(T[1][M][j],k);
+       // }
         lam_s = lam_S;// harmonic_mean(lam_p,lam_S,dpv,dpv_half,dpv_half);
 
         a_S = lam_s/(y_all[N+1][0]-y_all[N][0]);
@@ -401,14 +407,14 @@ static void solver_gauss_seidel (){
     for (int i = 1; i < N + 1; i++) {
         for (int j = 1; j < M + 1; j++) {
             //Compute lambda at the node
-            lam_p = 0,lam_E = 0, lam_W = 0, lam_N = 0, lam_S = 0;
-            for (int k = 0; k< max_lambda_degree+1; k++){
-              lam_p += lambda_f[Material_matrix[i][j]][k] + pow(T[1][i][j],k);
-              lam_E += lambda_f[Material_matrix[i][j+1]][k] + pow(T[1][i][j+1],k);
-              lam_N += lambda_f[Material_matrix[i+1][j]][k] + pow(T[1][i+1][j],k);
-              lam_W += lambda_f[Material_matrix[i][j-1]][k] + pow(T[1][i][j-1],k);
-              lam_S += lambda_f[Material_matrix[i-1][j]][k] + pow(T[1][i-1][j],k);
-            }
+         //   lam_p = 0,lam_E = 0, lam_W = 0, lam_N = 0, lam_S = 0;
+          //  for (int k = 0; k< max_lambda_degree+1; k++){
+              lam_p = lambda_f[Material_matrix[i][j]][0];// + pow(T[1][i][j],k);
+              lam_E = lambda_f[Material_matrix[i][j+1]][0];// + pow(T[1][i][j+1],k);
+              lam_N = lambda_f[Material_matrix[i+1][j]][0];// + pow(T[1][i+1][j],k);
+              lam_W = lambda_f[Material_matrix[i][j-1]][0];// + pow(T[1][i][j-1],k);
+              lam_S = lambda_f[Material_matrix[i-1][j]][0];// + pow(T[1][i-1][j],k);
+          //  }
             dn = y_all[i+1][j]-y_all[i][j];
             ds = y_all[i][j]-y_all[i-1][j];
             de = x_all[i][j+1]-x_all[i][j];
@@ -425,9 +431,10 @@ static void solver_gauss_seidel (){
             a_N = Beta * lam_n * S_h/dn;
             
             a_p = a_E + a_W +a_N + a_S + rho[Material_matrix[i][j]] * V_p * Cp[Material_matrix[i][j]] / delta_t;
-            b_p = qv_p[Material_matrix[i][j]] * V_p + V_p *rho[Material_matrix[i][j]] * Cp[Material_matrix[i][j]] * T[0][i][j] / delta_t + (1-Beta) * Q_p[0][i][j];
-            Q_p[1][i][j] = ((-1*(T[0][i][j-1] - T[0][i][j]))*a_W +((T[0][i][j+1] - T[0][i][j]))*a_E  +
-                    (-1*(T[0][i-1][j] - T[0][i][j])) * a_S  + (((T[0][i+1][j] - T[0][i][j]))*a_N ))/Beta + qv_p[Material_matrix[i][j]] * V_p;
+            b_p = qv_p[Material_matrix[i][j]] * V_p + V_p *rho[Material_matrix[i][j]] * Cp[Material_matrix[i][j]] * T[0][i][j] / delta_t + (1-Beta) *((T[0][i][j-1] - T[0][i][j])*a_W/Beta +(T[0][i][j+1] - T[0][i][j])*a_E/Beta   +
+                                                                                                                                                       (T[0][i-1][j] - T[0][i][j]) * a_S/Beta   + (((T[0][i+1][j] - T[0][i][j]))*a_N/Beta) + qv_p[Material_matrix[i][j]] * V_p);
+           // Q_p[1][i][j] = ((-1*(T[0][i][j-1] - T[0][i][j]))*a_W +((T[0][i][j+1] - T[0][i][j]))*a_E  +
+             //       (-1*(T[0][i-1][j] - T[0][i][j])) * a_S  + (((T[0][i+1][j] - T[0][i][j]))*a_N ))/Beta + qv_p[Material_matrix[i][j]] * V_p;
             
             //We compute the temperature
             

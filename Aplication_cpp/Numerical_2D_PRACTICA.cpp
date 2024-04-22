@@ -10,8 +10,8 @@ using namespace std;
 
 //NUMRICAL PARAMETERS
 //Mesh parameters
-const int N = 150; //Number of divisions in vertical axis (rows)
-const int M = 150;// Number of divisions in horizontal axis (0umns)
+const int N = 50; //Number of divisions in vertical axis (rows)
+const int M = 50;// Number of divisions in horizontal axis (0umns)
 const int Num_materials = 4; // Specify the number of materials in the grid
 
 const double p_1[2] = {0.50,0.40};

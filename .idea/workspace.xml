@@ -20,7 +20,8 @@
   <component name="ChangeListManager">
     <list default="true" id="ab8e33b2-448e-4253-9e67-733bb0e8adce" name="Changes" comment="update">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Aplication_cpp/Main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Aplication_cpp/Main.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Aplication_cpp/Numerical_2D.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Aplication_cpp/Numerical_2D.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Aplication_cpp/Numerical_2D_PRACTICA.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Aplication_cpp/Numerical_2D_PRACTICA.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -41,6 +42,19 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="UPDATE_TYPE" value="REBASE" />
   </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">
+    <option name="selectedUrlAndAccountId">
+      <UrlAndAccount>
+        <option name="accountId" value="1a031b58-65bb-4055-91aa-02cf93f71f54" />
+        <option name="url" value="https://github.com/Biel-PS/Convex_Conduc_solver.git" />
+      </UrlAndAccount>
+    </option>
+  </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
@@ -53,26 +67,27 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "cf.first.check.clang-format": "false",
-    "cidr.known.project.marker": "true",
-    "last_opened_file_path": "C:/Users/thema/Desktop/uni/3r/2n quatri/Dinamica de gasos/Numerical_try/Aplication_cpp/Main.cpp",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "CMakeSettings",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/thema/Desktop/uni/3r/2n quatri/Dinamica de gasos/Numerical_try/Aplication_cpp/Numerical_2D_PRACTICA.cpp&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;CMakeSettings&quot;,
+    &quot;structure.view.defaults.are.configured&quot;: &quot;true&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
-  <component name="RunManager" selected="C/C++ File.Main.cpp">
+}</component>
+  <component name="RunManager" selected="C/C++ File.Numerical_2D.cpp">
     <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -80,6 +95,18 @@
     </configuration>
     <configuration name="Main.cpp" type="CppFileRunConfiguration" factoryName="CppFileRunConfiguration" singleton="false" nameIsGenerated="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Numerical_try" TARGET_NAME="Main.cpp" CONFIG_NAME="Main.cpp">
       <option name="sourceFile" value="C:\Users\thema\Desktop\uni\3r\2n quatri\Dinamica de gasos\Numerical_try\Aplication_cpp\Main.cpp" />
+      <method v="2">
+        <option name="com.jetbrains.cidr.cpp.runfile.CppFileBuildBeforeRunTaskProvider$BasicBuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Numerical_2D_PRACTICA.cpp" type="CppFileRunConfiguration" factoryName="CppFileRunConfiguration" nameIsGenerated="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" WORKING_DIR="file://$PROJECT_DIR$" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Numerical_try" TARGET_NAME="Numerical_2D_PRACTICA.cpp" CONFIG_NAME="Numerical_2D_PRACTICA.cpp">
+      <option name="sourceFile" value="C:\Users\thema\Desktop\uni\3r\2n quatri\Dinamica de gasos\Numerical_try\Aplication_cpp\Numerical_2D_PRACTICA.cpp" />
+      <method v="2">
+        <option name="com.jetbrains.cidr.cpp.runfile.CppFileBuildBeforeRunTaskProvider$BasicBuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Numerical_2D.cpp" type="CppFileRunConfiguration" factoryName="CppFileRunConfiguration" nameIsGenerated="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" WORKING_DIR="file://$PROJECT_DIR$/Aplication_cpp" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Numerical_try" TARGET_NAME="Numerical_2D.cpp" CONFIG_NAME="Numerical_2D.cpp">
+      <option name="sourceFile" value="C:\Users\thema\Desktop\uni\3r\2n quatri\Dinamica de gasos\Numerical_try\Aplication_cpp\Numerical_2D.cpp" />
       <method v="2">
         <option name="com.jetbrains.cidr.cpp.runfile.CppFileBuildBeforeRunTaskProvider$BasicBuildBeforeRunTask" enabled="true" />
       </method>
@@ -106,7 +133,9 @@
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="C/C++ File.Numerical_2D_PRACTICA.cpp" />
       <item itemvalue="C/C++ File.Main.cpp" />
+      <item itemvalue="C/C++ File.Numerical_2D.cpp" />
       <item itemvalue="Python.main" />
     </list>
   </component>
@@ -130,7 +159,17 @@
       <workItem from="1709820481062" duration="14954000" />
       <workItem from="1709929774909" duration="3096000" />
       <workItem from="1709941020092" duration="5531000" />
-      <workItem from="1710173516193" duration="3384000" />
+      <workItem from="1710173516193" duration="3394000" />
+      <workItem from="1710604771224" duration="9321000" />
+      <workItem from="1710790037980" duration="8293000" />
+      <workItem from="1711146737136" duration="1223000" />
+      <workItem from="1711200343835" duration="1450000" />
+      <workItem from="1711848807528" duration="52000" />
+      <workItem from="1713374465367" duration="4329000" />
+      <workItem from="1713419313065" duration="1078000" />
+      <workItem from="1713712486064" duration="6490000" />
+      <workItem from="1713761194491" duration="68000" />
+      <workItem from="1713810344622" duration="8856000" />
     </task>
     <task id="LOCAL-00001" summary="update">
       <created>1707924754764</created>
@@ -202,7 +241,49 @@
       <option name="project" value="LOCAL" />
       <updated>1709932337407</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="update">
+      <created>1710176937957</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1710176937957</updated>
+    </task>
+    <task id="LOCAL-00012" summary="update">
+      <created>1710614361158</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1710614361158</updated>
+    </task>
+    <task id="LOCAL-00013" summary="update">
+      <created>1710615338226</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1710615338226</updated>
+    </task>
+    <task id="LOCAL-00014" summary="update">
+      <created>1710798281917</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1710798281917</updated>
+    </task>
+    <task id="LOCAL-00015" summary="update">
+      <created>1713419405529</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1713419405529</updated>
+    </task>
+    <task id="LOCAL-00016" summary="update">
+      <created>1713761248825</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1713761248825</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
