@@ -26,7 +26,7 @@ using namespace std;
 
 
 //NOTE: the boundary_material_coordinates only works for rectangular distributions of material within the control surface.
-    const double boundary_material_coordinates[Num_materials][4] = {{0,p_1[1]*(N+2)/H,0,p_1[0]*(M+2)/L},{0,p_2[1]*(N+2)/H,p_1[0]*(M+2)/L,p_3[0]*(M+2)/L},{p_1[1]*(N+2)/H,p_3[1]*(N+2)/H,0,p_2[0]*(M+2)/L}, {p_2[1]*(N+2)/H,p_3[1]*(N+2)/H,p_2[0]*(M+2)/L,p_3[0]*(M+2)/L}} ; // Specify the boundary of each material as [material][0 --> start and 1--> finish row, 2-->start and 3-->finish 0umn]
+    const double boundary_material_coordinates[Num_materials][4] = {{0,p_1[1]*(N+2)/H,0,p_1[0]*(M+2)/L},{0,p_2[1]*(N+2)/H,p_1[0]*(M+2)/L,p_3[0]*(M+2)/L},{p_1[1]*(N+2)/H,p_3[1]*(N+2)/H,0,p_2[0]*(M+2)/L}, {p_2[1]*(N+2)/H,p_3[1]*(N+2)/H,p_2[0]*(M+2)/L,p_3[0]*(M+2)/L}} ; // Specify the boundary of each material as [material][0 --> start and 1--> finish row, 2-->start and 3-->finish column]
 
     //NOTE: THE START AND END ROW/0UMN IN THIS VECTOR IS CONSIDERED OF THE MATERIAL
     //THAT IS SPECIFIED, ROW 1 TO 2 MEANS THAT NODES IN ROW 1 AND 2 ARE OF THE SELECTED MATERIAL!!!Ç
@@ -39,20 +39,20 @@ using namespace std;
     
     //Temporal and convergence parameters
     const double delta_convergence = 1E-9; //Convergence criteria
-    const double delta_t = 1; // Time increment [s]
+    const double delta_t = 0.5; // Time increment [s]
     const double t_init = 0; // initial time [s]
     double t_actual = t_init;
     const double t_end = 5000; // end time [s]
     const double Beta = 0.5; // =0 explícit, =0.5 Charles-Nicholson, = 1 Implícit
-    const double relaxation = 0.95;
+    const double relaxation = 1.05;
 
 //FISICAL PARAMETERS
 
     //External convection temperatures in the boundary
     const double Tnorth = 0; // Temperature in the north wall
-    const double Tsouth = 23;// Temperature in the south wall
+    const double Tsouth = 23.0;// Temperature in the south wall
     const double Teast = 0; // Temperature in the east wall
-    const double Twest = 33; // Temeprature in the west wall
+    const double Twest = 33.0; // Temeprature in the west wall
     //External convection constants in the boundary
     const double alfa_n = 0; //north wall
     const double alfa_s = 0; //south wall
@@ -97,8 +97,8 @@ using namespace std;
     double S_h = 0;
     double S_v = 0;
     double V_p = 0;
-    const double dpv = (H/(M)); // distance between vertical nodes and surfaces
-    const double dph = (L/(N)); // distance between horizontal nodes and surfaces
+    const double dpv = (H/(N)); // distance between vertical nodes and surfaces
+    const double dph = (L/(M)); // distance between horizontal nodes and surfaces
     const double dph_half = dph/2;
     const double dpv_half = dpv/2;
 
@@ -173,18 +173,50 @@ static void vec_geometric_deff (){ //initial vector deffinition method
         }
     }
    //Compute the material matrix, where every node is assigned a material
-   for (int k = 0; k < Num_materials; k++ ) {
-       for (int i = 0; i < N + 2; i++) {
-           for (int j = 0; j < M + 2; j++) {
-                // set for the correct range the value of the index of the corresponding material
-               if(boundary_material_coordinates[k][0] <= i && boundary_material_coordinates[k][1] >= i &&
-               boundary_material_coordinates[k][2] <= j && boundary_material_coordinates[k][3] >= j)
-               {
-                   Material_matrix[i][j] = k;
-               }
-           }
-       }
-   }
+//   for (int k = 0; k < Num_materials; k++ ) {
+//       for (int i = 0; i < N + 2; i++) {
+//           for (int j = 0; j < M + 2; j++) {
+//                // set for the correct range the value of the index of the corresponding material
+//               if(boundary_material_coordinates[k][0] <= i && boundary_material_coordinates[k][1] >= i &&
+//               boundary_material_coordinates[k][2] <= j && boundary_material_coordinates[k][3] >= j)
+//               {
+//                   Material_matrix[i][j] = k;
+//               }
+//           }
+//       }
+//   }
+
+    for (int i = 1; i < N + 1; i++) {
+        for (int j = 1; j < M+1; j++) {
+            // set for the correct range the value of the index of the corresponding material
+//                if(boundary_material_coordinates[k][0] <= i && boundary_material_coordinates[k][1] >= i &&
+//                   boundary_material_coordinates[k][2] <= j && boundary_material_coordinates[k][3] >= j )
+//                {
+            if (x_all[i][j] <= p_1[0] && y_all[i][j] < p_1[1]) {
+                Material_matrix[i][j] = 0;
+            }
+            else if (x_all[i][j] < p_1[0] && y_all[i][j] >= p_1[1]) {
+                Material_matrix[i][j] = 2;
+            }
+            else if (x_all[i][j] > p_1[0] && y_all[i][j] <= p_2[1]) {
+                Material_matrix[i][j] = 1;
+            }
+            else if (x_all[i][j] > p_1[0] && y_all[i][j] > p_2[1]) {
+                Material_matrix[i][j] = 3;
+            }
+
+        }
+    }
+    //}
+    //}
+    for(int i = 0; i<N+2;i++){
+        Material_matrix[i][0] = Material_matrix[i][1];
+        Material_matrix[i][M+1] = Material_matrix[i][M];
+    }
+    for(int j = 0; j<M+2;j++){
+        Material_matrix[0][j] = Material_matrix[1][j];
+        Material_matrix[N+1][j] = Material_matrix[N][j];
+    }
    //Print the matrix of material (JUST FOR DEBUGGING)
 //    for (int i = N+1; i>=0; i--){
 //        for (int j = 0; j<M+2; j++){
@@ -274,20 +306,20 @@ static void solver_gauss_seidel (){
                // lam_p = 0,lam_W = 0, lam_N = 0;
               //  for (int k = 0; k< max_lambda_degree+1; k++){
                   //  lam_p += lambda_f[Material_matrix[0][M+1]][k] + pow(T[1][0][M+1],k);
-                    lam_W = lambda_f[Material_matrix[0][M]][0];// + pow(T[1][0][M],k);
-                    lam_N = lambda_f[Material_matrix[1][M+1]][0];// + pow(T[1][M+1][0],k);
-             //   }
-                lam_n = lam_N; //harmonic_mean(lam_p,lam_N,dpv,dpv_half,dpv_half);
-                lam_w = lam_W; //harmonic_mean(lam_p,lam_w,dph,dph_half,dph_half);
-
-
-                a_W = lam_w/dph_half;
-                a_N = lam_n/dpv_half;
-                a_p = a_W + a_N + alfa_e + alfa_s;
-                b_p = alfa_s*Tsouth + alfa_e*alfa_e;
-
-                T [1][0][M+1] = (a_W * T[1][0][M] + a_N*T[1][1][M+1] + b_p)/a_p;
-                //T [1][0][M+1] =Tsouth;
+//                    lam_W = lambda_f[Material_matrix[0][M]][0];// + pow(T[1][0][M],k);
+//                    lam_N = lambda_f[Material_matrix[1][M+1]][0];// + pow(T[1][M+1][0],k);
+//             //   }
+//                lam_n = lam_N; //harmonic_mean(lam_p,lam_N,dpv,dpv_half,dpv_half);
+//                lam_w = lam_W; //harmonic_mean(lam_p,lam_w,dph,dph_half,dph_half);
+//
+//
+//                a_W = lam_w/dph_half;
+//                a_N = lam_n/dpv_half;
+//                a_p = a_W + a_N + alfa_e + alfa_s;
+//                b_p = alfa_s*Tsouth + alfa_e*alfa_e;
+//
+//                T [1][0][M+1] = (a_W * T[1][0][M] + a_N*T[1][1][M+1] + b_p)/a_p;
+                  T [1][0][M+1] =Tsouth;
             case 2: // top left vertice
 
                // lam_p = 0,lam_E = 0, lam_S = 0;
@@ -303,7 +335,7 @@ static void solver_gauss_seidel (){
                 a_E = lam_e/dph_half;
                 a_S = lam_s/dpv_half;
                 a_p = a_E + a_S + alfa_w + alfa_n;
-                b_p = alfa_n*Tnorth + alfa_w*alfa_w;
+                b_p = alfa_n*Tnorth + alfa_w*Twest;
 
                 T [1][N+1][0] = (a_E * T[1][N+1][1] + a_S*T[1][N][0] + b_p)/a_p;
 
@@ -321,7 +353,7 @@ static void solver_gauss_seidel (){
                 a_W = lam_w/dph_half;
                 a_S = lam_s/dpv_half;
                 a_p = a_W + a_S + alfa_e + alfa_n;
-                b_p = alfa_n*Tnorth + alfa_e*alfa_e;
+                b_p = alfa_n*Tnorth + alfa_e*Teast;
 
                 T [1][N+1][M+1] = (a_W * T[1][N+1][M] + a_S*T[1][N][M+1] + b_p)/a_p;
         }

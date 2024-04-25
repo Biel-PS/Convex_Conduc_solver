@@ -10,8 +10,8 @@ using namespace std;
 
 //NUMRICAL PARAMETERS
 //Mesh parameters
-const int N = 50; //Number of divisions in vertical axis (rows)
-const int M = 50;// Number of divisions in horizontal axis (0umns)
+const int N =8*10; //Number of divisions in vertical axis (rows)
+const int M =11*10;// Number of divisions in horizontal axis (0umns)
 const int Num_materials = 4; // Specify the number of materials in the grid
 
 const double p_1[2] = {0.50,0.40};
@@ -25,7 +25,7 @@ const double W = 1; // Profundity of the square plane in case a 3d case with 2d 
 
 
 //NOTE: the boundary_material_coordinates only works for rectangular distributions of material within the control surface.
-const double boundary_material_coordinates[Num_materials][4] = {{0,p_1[1]*(N)/H,0,p_1[0]*(M)/L},{0,p_2[1]*(N)/H,p_1[0]*(M)/L,p_3[0]*(M)/L},{p_1[1]*(N)/H,p_3[1]*(N)/H,0,p_2[0]*(M)/L}, {p_2[1]*(N)/H,p_3[1]*(N)/H,p_2[0]*(M)/L,p_3[0]*(M)/L}} ; // Specify the boundary of each material as [material][0 --> start and 1--> finish row, 2-->start and 3-->finish 0umn]
+//const double boundary_material_coordinates[Num_materials][4] = {{0,p_1[1]*N/H,0,p_1[0]*M/L},{0,p_2[1]*N/H +1e-6 ,p_1[0]*M/L + L/M,p_3[0]*M/L},{p_1[1]*N/H + H/N,p_3[1]*N/H,0,p_2[0]*M/L}, {p_2[1]*N/H + H/N ,p_3[1]*N/H,p_2[0]*M/L + L/M,p_3[0]*M/L}} ; // Specify the boundary of each material as [material][0 --> start and 1--> finish row, 2-->start and 3-->finish column]
 
 //NOTE: THE START AND END ROW/0UMN IN THIS VECTOR IS CONSIDERED OF THE MATERIAL
 //THAT IS SPECIFIED, ROW 1 TO 2 MEANS THAT NODES IN ROW 1 AND 2 ARE OF THE SELECTED MATERIAL!!!Ç
@@ -37,14 +37,14 @@ const double Cp[Num_materials] = {750,770,810,930}; //Cp is suposed constant wit
 const double qv_p[Num_materials] = {0,0,0,0};
 
 //Temporal and convergence parameters
-const double delta_convergence = 1E-19; //Convergence criteria
-const double delta_t = 1; // Time increment [s]
+const double delta_convergence = 1E-14; //Convergence criteria
+const double delta_t = 0.1; // Time increment [s]
 const double t_init = 0; // initial time [s]
 double t_actual = t_init;
 const double t_end = 5000; // end time [s]
-const double Beta = 0.5; // =0 explícit, =0.5 Charles-Nicholson, = 1 Implícit
-const double relaxation = 1.05;
-
+const double Beta = 1; // =0 explícit, =0.5 Charles-Nicholson, = 1 Implícit
+const double relaxation = 0.98;
+const int ratio_print_t = round(50/delta_t);
 //FISICAL PARAMETERS
 
 //External convection temperatures in the boundary
@@ -69,7 +69,8 @@ const int max_lambda_degree = 0; // degree of the max polynomial lambda (if its 
 const double lambda_f[Num_materials][max_lambda_degree + 1] = {{170},{140},{200},{140}}; //lambda of each material [material][a_0,a_1*T,a_2*T^2,...] (function of T)
 
 
-double lambda_vector [N+2][M+2][4] = {0}; //for each wall 0--> north, 1--> east, 2--> west, 3--> south
+double lambda_vector [N+2][M+2][4] = {0};
+//for each wall 0--> north, 1--> east, 2--> west, 3--> south
 //Control variables
 bool excep = false; //if this variable becomes true at any point, the program stops.
 
@@ -79,7 +80,7 @@ bool excep = false; //if this variable becomes true at any point, the program st
 //Postion of heach control volume (ONLY central node)
 //    double x_p [N][M] = {0};
 //    double y_p [N][M] = {0};
-int Material_matrix[N+2][M+2] = {0}; //assign the index of every material to each node
+int Material_matrix[N+2][M+2] = {-1}; //assign the index of every material to each node
 
 //Position of every node
 double x_all [N+2][M+2] = {0};
@@ -98,8 +99,8 @@ double bp[N+2][M+2] = {0};*/
 double S_h = 0;
 double S_v = 0;
 double V_p = 0;
-const double dpv = (H/(M)); // distance between vertical nodes and surfaces
-const double dph = (L/(N)); // distance between horizontal nodes and surfaces
+const double dpv = (H/(N)); // distance between vertical nodes and surfaces
+const double dph = (L/(M)); // distance between horizontal nodes and surfaces
 const double dph_half = dph/2;
 const double dpv_half = dpv/2;
 
@@ -175,18 +176,30 @@ static void vec_geometric_deff (){ //initial vector deffinition method
         }
     }
     //Compute the material matrix, where every node is assigned a material
-    for (int k = 0; k < Num_materials; k++ ) {
+  //  for (int k = 0; k < Num_materials; k++ ) {
         for (int i = 1; i < N + 1; i++) {
-            for (int j = 1; j < M + 1; j++) {
+            for (int j = 1; j < M+1; j++) {
                 // set for the correct range the value of the index of the corresponding material
-                if(boundary_material_coordinates[k][0] <= i && boundary_material_coordinates[k][1] >= i &&
-                   boundary_material_coordinates[k][2] <= j && boundary_material_coordinates[k][3] >= j)
-                {
-                    Material_matrix[i][j] = k;
+//                if(boundary_material_coordinates[k][0] <= i && boundary_material_coordinates[k][1] >= i &&
+//                   boundary_material_coordinates[k][2] <= j && boundary_material_coordinates[k][3] >= j )
+//                {
+                    if (x_all[i][j] <= p_1[0] && y_all[i][j] < p_1[1]) {
+                        Material_matrix[i][j] = 0;
+                    }
+                    else if (x_all[i][j] < p_1[0] && y_all[i][j] >= p_1[1]) {
+                        Material_matrix[i][j] = 2;
+                    }
+                    else if (x_all[i][j] > p_1[0] && y_all[i][j] <= p_2[1]) {
+                        Material_matrix[i][j] = 1;
+                    }
+                    else if (x_all[i][j] > p_1[0] && y_all[i][j] > p_2[1]) {
+                        Material_matrix[i][j] = 3;
+                    }
+
                 }
             }
-        }
-    }
+        //}
+    //}
     for(int i = 0; i<N+2;i++){
         Material_matrix[i][0] = Material_matrix[i][1];
         Material_matrix[i][M+1] = Material_matrix[i][M];
@@ -195,14 +208,14 @@ static void vec_geometric_deff (){ //initial vector deffinition method
         Material_matrix[0][j] = Material_matrix[1][j];
         Material_matrix[N+1][j] = Material_matrix[N][j];
     }
-    //Print the matrix of material (JUST FOR DEBUGGING)
-    for (int i = N+1; i>=0; i--){
-        for (int j = 0; j<M+2; j++){
-            cout << Material_matrix[i][j] << " ";
-        }
-        cout << "\n";
-    }
-    cout << "Lambda \n";
+//    //Print the matrix of material (JUST FOR DEBUGGING)
+//    for (int i = N+1; i>=0; i--){
+//        for (int j = 0; j<M+2; j++){
+//            cout << Material_matrix[i][j] << " ";
+//        }
+//        cout << "\n";
+//    }
+
     //CONTROL THAT ALL THE MATERIAL TYPES HAVE BEEN ASSIGNED
     for (int i = 0;i<N+2 ; i++){
         if(excep){
@@ -224,7 +237,7 @@ static void vec_geometric_deff (){ //initial vector deffinition method
     for (int i = 1; i < N + 1; i++) {
         for (int j = 1; j < M + 1; j++) {
             //Compute lambda at the node
-            lam_p = 0, lam_E = 0, lam_W = 0, lam_N = 0, lam_S = 0;
+
 
             dn = y_all[i+1][j]-y_all[i][j];
             ds = y_all[i][j]-y_all[i-1][j];
@@ -244,13 +257,36 @@ static void vec_geometric_deff (){ //initial vector deffinition method
 
         }
     }
+    // Set the lambndas at the boundary
+    for(int i = 1; i<N+1;i++){
+        //west boundary
+        de = x_all[i][1]-x_all[i][0];
+        lam_E = lambda_f[Material_matrix[i][0]][0];
+        lambda_vector[i][0][1] = lam_E;
 
-    for (int i = N+1; i>=0; i--){
-        cout << "\n";
-        for (int j = 0; j<M+2; j++){
-            cout << lambda_vector[i][j][0] << " ";
+        //east boundary
+        dw = x_all[i][M+1]-x_all[i][M];
+        lam_W = lambda_f[Material_matrix[i][M+1]][0];
+        lambda_vector[i][M+1][2] = lam_W;
         }
+    for(int j = 1; j<M+1;j++){
+        //North boundary
+        ds = y_all[N+1][j] - y_all[N][j];
+        lam_S = lambda_f[Material_matrix[N+1][j]][0];
+        lambda_vector[N+1][j][3] = lam_S;
+
+        //south boundary
+        dn = y_all[1][j] - y_all[0][j];
+        lam_N = lambda_f[Material_matrix[0][j]][0];
+        lambda_vector[0][j][0] = lam_N;
     }
+
+//    for (int i = N+1; i>=0; i--){
+//        cout << "\n";
+//        for (int j = 0; j<M+2; j++){
+//            cout << lambda_vector[i][j][0] << " ";
+//        }
+//    }
 
 //    for (int i = N; i>=0; i--){
 //        for (int j = 0; j<M+1; j++){
@@ -317,17 +353,17 @@ static void solver_gauss_seidel () {
                 // lam_p = 0,lam_W = 0, lam_N = 0;
                 //  for (int k = 0; k< max_lambda_degree+1; k++){
                 //  lam_p += lambda_f[Material_matrix[0][M+1]][k] + pow(T[1][0][M+1],k);
-                lam_W = lambda_f[Material_matrix[0][M]][0];// + pow(T[1][0][M],k);
-                lam_N = lambda_f[Material_matrix[1][M+1]][0];// + pow(T[1][M+1][0],k);
-                //   }
-                lam_n = lam_N; //harmonic_mean(lam_p,lam_N,dpv,dpv_half,dpv_half);
-                lam_w = lam_W; //harmonic_mean(lam_p,lam_w,dph,dph_half,dph_half);
-
-
-                a_W = lam_w/dph_half;
-                a_N = lam_n/dpv_half;
-                a_p = a_W + a_N + alfa_e + alfa_s;
-                b_p = alfa_s*Tsouth + alfa_e*alfa_e;
+//                lam_W = lambda_f[Material_matrix[0][M]][0];// + pow(T[1][0][M],k);
+//                lam_N = lambda_f[Material_matrix[1][M+1]][0];// + pow(T[1][M+1][0],k);
+//                //   }
+//                lam_n = lam_N; //harmonic_mean(lam_p,lam_N,dpv,dpv_half,dpv_half);
+//                lam_w = lam_W; //harmonic_mean(lam_p,lam_w,dph,dph_half,dph_half);
+//
+//
+//                a_W = lam_w/dph_half;
+//                a_N = lam_n/dpv_half;
+//                a_p = a_W + a_N + alfa_e + alfa_s;
+//                b_p = alfa_s*Tsouth + alfa_e*alfa_e;
 
                 //T [1][0][M+1] = (a_W * T[1][0][M] + a_N*T[1][1][M+1] + b_p)/a_p;
                 T [1][0][M+1] =Tsouth;
@@ -336,48 +372,48 @@ static void solver_gauss_seidel () {
                 // lam_p = 0,lam_E = 0, lam_S = 0;
                 //   for (int k = 0; k< max_lambda_degree+1; k++){
                 //  lam_p += lambda_f[Material_matrix[N+1][0]][k] + pow(T[1][N+1][0],k);
-                lam_E = lambda_f[Material_matrix[N+1][1]][0];// + pow(T[1][N+1][1],k);
-                lam_S = lambda_f[Material_matrix[N][0]][0];// + pow(T[1][N][0],k);
-                //  }
-                lam_s = lam_S;//harmonic_mean(lam_p,lam_S,dpv,dpv_half,dpv_half);
-                lam_e = lam_E; //harmonic_mean(lam_p,lam_E,dph,dph_half,dph_half);
+//                lam_E = lambda_f[Material_matrix[N+1][1]][0];// + pow(T[1][N+1][1],k);
+//                lam_S = lambda_f[Material_matrix[N][0]][0];// + pow(T[1][N][0],k);
+//                //  }
+//                lam_s = lam_S;//harmonic_mean(lam_p,lam_S,dpv,dpv_half,dpv_half);
+//                lam_e = lam_E; //harmonic_mean(lam_p,lam_E,dph,dph_half,dph_half);
 
 
-                a_E = lam_e/dph_half;
-                a_S = lam_s/dpv_half;
-                a_p = a_E + a_S + alfa_w + alfa_n;
-                b_p = alfa_n*Tnorth + alfa_w*Twest;
+//                a_E = lam_e/dph_half;
+//                a_S = lam_s/dpv_half;
+//                a_p = a_E + a_S + alfa_w + alfa_n;
+//                b_p = alfa_n*Tnorth + alfa_w*Twest;
 
-                T [1][N+1][0] = (a_E * T[1][N+1][1] + a_S*T[1][N][0] + b_p)/a_p;
+                T [1][N+1][0] = T[1][N+1][1]; //(a_E * T[1][N+1][1] + a_S*T[1][N][0] + b_p)/a_p;
 
             case 3: // top right vertice
                 //   lam_p = 0,lam_W = 0, lam_S = 0;
                 //   for (int k = 0; k< max_lambda_degree+1; k++){
-                lam_p = lambda_f[Material_matrix[N+1][M+1]][0];// + pow(T[1][N+1][M+1],k);
-                lam_W = lambda_f[Material_matrix[N+1][M]][0];// + pow(T[1][N+1][M],k);
-                lam_S = lambda_f[Material_matrix[N][M+1]][0];// + pow(T[1][N][M+1],k);
-                //    }
-                lam_s = lam_S;//harmonic_mean(lam_p,lam_S,dpv,dpv_half,dpv_half);
-                lam_w = lam_W; //harmonic_mean(lam_p,lam_W,dph,dph_half,dph_half);
+//                lam_p = lambda_f[Material_matrix[N+1][M+1]][0];// + pow(T[1][N+1][M+1],k);
+//                lam_W = lambda_f[Material_matrix[N+1][M]][0];// + pow(T[1][N+1][M],k);
+//                lam_S = lambda_f[Material_matrix[N][M+1]][0];// + pow(T[1][N][M+1],k);
+//                //    }
+//                lam_s = lam_S;//harmonic_mean(lam_p,lam_S,dpv,dpv_half,dpv_half);
+//                lam_w = lam_W; //harmonic_mean(lam_p,lam_W,dph,dph_half,dph_half);
+//
+//
+//                a_W = lam_w/dph_half;
+//                a_S = lam_s/dpv_half;
+//                a_p = a_W + a_S + alfa_e + alfa_n;
+//                b_p = alfa_n*Tnorth + alfa_e*Teast;
 
-
-                a_W = lam_w/dph_half;
-                a_S = lam_s/dpv_half;
-                a_p = a_W + a_S + alfa_e + alfa_n;
-                b_p = alfa_n*Tnorth + alfa_e*Teast;
-
-                T [1][N+1][M+1] = (a_W * T[1][N+1][M] + a_S*T[1][N][M+1] + b_p)/a_p;
+                T [1][N+1][M+1] = T [1][N+1][M];//(a_W * T[1][N+1][M] + a_S*T[1][N][M+1] + b_p)/a_p;
         }
     }
 
 
     //Compute coefficient for boundary nodes at EAST AND WEST sides
     for (int i = 1; i < N + 1; i++) {
-        lam_E = lambda_f[Material_matrix[i][1]][0];
+        lam_E = lambda_vector[i][0][1];
         de = x_all[i][1]-x_all[i][0];
-        lam_e = lam_E;
+       // lam_e = lam_E;
 
-        a_E = lam_e/(de);
+        a_E = lam_E/(de);
         a_p = a_E + alfa_w;
         b_p = alfa_w * Twest;
 
@@ -395,11 +431,11 @@ static void solver_gauss_seidel () {
         // lam_p = 0,lam_S = 0;
         // for (int k = 0; k< max_lambda_degree+1; k++){
         //   lam_p += lambda_f[Material_matrix[M+1][j]][0];// + pow(T[1][M+1][j],k);
-        lam_S = lambda_f[Material_matrix[N][j]][0];// + pow(T[1][M][j],k);
+        lam_S = lambda_vector[N+1][j][3];// + pow(T[1][M][j],k);
         // }
-        lam_s = lam_S;// harmonic_mean(lam_p,lam_S,dpv,dpv_half,dpv_half);
+      //  lam_s = lam_S;// harmonic_mean(lam_p,lam_S,dpv,dpv_half,dpv_half);
 
-        a_S = lam_s/(y_all[N+1][0]-y_all[N][0]);
+        a_S = lam_S/(y_all[N+1][0]-y_all[N][0]);
         a_p = a_S;
         b_p = q_w;
 
@@ -467,7 +503,7 @@ int main() {
         }
         first = true;
 
-        if(cont%50== 0) {
+        if(cont%ratio_print_t== 0) {
             cout << "Process at: " << round(t_actual / (t_end + delta_t) * 100 ) << " %  \n";
         }
 
