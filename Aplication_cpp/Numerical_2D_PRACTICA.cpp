@@ -211,9 +211,7 @@ static void vec_geometric_deff (){ //initial vector deffinition method
 
     for (int i = 1; i < N + 1; i++) {
         for (int j = 1; j < M + 1; j++) {
-            //Compute lambda at the node
-
-
+            //At the internal control volumes
             dn = y_all[i+1][j]-y_all[i][j];
             ds = y_all[i][j]-y_all[i-1][j];
             de = x_all[i][j+1]-x_all[i][j];
