@@ -1,8 +1,6 @@
 #POST PROCESSING MODULE by Biel P.S.
 
 import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
-import numpy as np
 import pandas as pd
 import seaborn as sns
 import csv
@@ -42,7 +40,7 @@ with open('posy_map.csv') as posy:
         y.append(row[0:(len(row)-1)])
     y_l = [0] * (len(y[0]) * len(y))
     cont = 0
-    for i in range(0,len(y)):
+    for i in range(1,len(y)):
         for j in range(0,len(y[0])):
             y_l[cont] = float(y[i][j])
             cont+=1
@@ -57,9 +55,8 @@ def fmt(x):
 data = pd.DataFrame({'x': x_l, 'y': y_l, 'T': T_l})
 data_pivoted = data.pivot_table(index="y", columns="x",values= "T",sort = False)
 
-ax = sns.heatmap(data_pivoted,annot = False, cmap= "viridis")
+ax = sns.heatmap(data_pivoted,annot = False, cmap= "rocket")
 
-cs = plt.contour(data_pivoted, colors='k',levels = 10,corner_mask = True)
+cs = plt.contour(data_pivoted, colors='y',levels = 10,corner_mask = True)
 plt.clabel(cs,cs.levels, inline = True, fmt = fmt, fontsize = 10)
-#plt.plot([len(x_l,1)/2,], [len(y),0], 'go-', label='line 1', linewidth=2)
 plt.show()

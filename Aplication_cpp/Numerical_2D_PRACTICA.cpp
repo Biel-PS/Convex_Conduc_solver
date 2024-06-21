@@ -9,8 +9,8 @@ using namespace std;
 
 //NUMRICAL PARAMETERS
 //Mesh parameters
-const int N =8*10; //Number of divisions in vertical axis (rows)
-const int M =11*10;// Number of divisions in horizontal axis (Columns)
+const int N =100; //Number of divisions in vertical axis (rows)
+const int M =100;// Number of divisions in horizontal axis (Columns)
 const int Num_materials = 4; // Specify the number of materials in the grid
 
 const double p_1[2] = {0.50,0.40};
@@ -22,27 +22,21 @@ const double H = 0.8; // Height of the square plane
 const double L = 1.10; // Length of the square plane
 const double W = 1; // Profundity of the square plane in case a 3d case with 2d heat transfer is wanted
 
+//REMEMBER: there are N+1 rows and M+1 columns because of the wall nodes (zero is the beginning)!!
 
-//NOTE: the boundary_material_coordinates only works for rectangular distributions of material within the control surface.
-//const double boundary_material_coordinates[Num_materials][4] = {{0,p_1[1]*N/H,0,p_1[0]*M/L},{0,p_2[1]*N/H +1e-6 ,p_1[0]*M/L + L/M,p_3[0]*M/L},{p_1[1]*N/H + H/N,p_3[1]*N/H,0,p_2[0]*M/L}, {p_2[1]*N/H + H/N ,p_3[1]*N/H,p_2[0]*M/L + L/M,p_3[0]*M/L}} ; // Specify the boundary of each material as [material][0 --> start and 1--> finish row, 2-->start and 3-->finish column]
-
-//NOTE: THE START AND END ROW/COLUMN IN THIS VECTOR IS CONSIDERED OF THE MATERIAL
-//THAT IS SPECIFIED, ROW 1 TO 2 MEANS THAT NODES IN ROW 1 AND 2 ARE OF THE SELECTED MATERIAL!!!Ç
-
-//REMEMBER: there are N+1 rows and M+1 0umns because of the wall nodes (zero is the beginning)!!
 
 const double rho[Num_materials] = {1500,1600,1900,2500}; //rho is suposed constant with T and t
 const double Cp[Num_materials] = {750,770,810,930}; //Cp is suposed constant with T and t
 const double qv_p[Num_materials] = {0,0,0,0};
 
 //Temporal and convergence parameters
-const double delta_convergence = 1E-14; //Convergence criteria
+const double delta_convergence = 1E-8; //Convergence criteria
 const double delta_t = 0.1; // Time increment [s]
 const double t_init = 0; // initial time [s]
 double t_actual = t_init;
 const double t_end = 5000; // end time [s]
-const double Beta = 1; // =0 explícit, =0.5 Charles-Nicholson, = 1 Implícit
-const double relaxation = 0.98;
+const double Beta =0; // =0 explícit, =0.5 Charles-Nicholson, = 1 Implícit
+const double relaxation = 0.9;
 const int ratio_print_t = round(50/delta_t);
 //FISICAL PARAMETERS
 
@@ -101,6 +95,8 @@ double ds = 0;
 double de = 0;
 double dw = 0;
 
+double Heat_parets [4][int(t_end/delta_t)] = {0};//for each wall 0--> north, 1--> east, 2--> west, 3--> south
+
 
 //METHODS THAT WILL BE USED
 
@@ -145,7 +141,6 @@ static void vec_geometric_deff (){ //initial vector deffinition method
         }
         y_all[N+1][j] = H;
     }
-
     //Compute the surface of every n,s and w,e between control volumes.
     S_h = dph*W;
     S_v = dpv*W;
@@ -183,13 +178,6 @@ static void vec_geometric_deff (){ //initial vector deffinition method
         Material_matrix[0][j] = Material_matrix[1][j];
         Material_matrix[N+1][j] = Material_matrix[N][j];
     }
-//    //Print the matrix of material (JUST FOR DEBUGGING)
-//    for (int i = N+1; i>=0; i--){
-//        for (int j = 0; j<M+2; j++){
-//            cout << Material_matrix[i][j] << " ";
-//        }
-//        cout << "\n";
-//    }
 
     //CONTROL THAT ALL THE MATERIAL TYPES HAVE BEEN ASSIGNED
     for (int i = 0;i<N+2 ; i++){
@@ -225,31 +213,27 @@ static void vec_geometric_deff (){ //initial vector deffinition method
 
             lambda_vector[i][j][0] = harmonic_mean(lam_p, lam_N, dn, dn/2, dn/2);
             lambda_vector[i][j][1] = harmonic_mean(lam_p, lam_E, de, de/2, de/2);
-            lambda_vector[i][j][2] = harmonic_mean(lam_p, lam_S, ds, ds/2, ds/2);
-            lambda_vector[i][j][3] = harmonic_mean(lam_p, lam_W, dw, dw/2, dw/2);
+            lambda_vector[i][j][3] = harmonic_mean(lam_p, lam_S, ds, ds/2, ds/2);
+            lambda_vector[i][j][2] = harmonic_mean(lam_p, lam_W, dw, dw/2, dw/2);
 
         }
     }
     // Set the lambndas at the boundary
     for(int i = 1; i<N+1;i++){
         //west boundary
-        de = x_all[i][1]-x_all[i][0];
         lam_E = lambda_f[Material_matrix[i][0]][0];
         lambda_vector[i][0][1] = lam_E;
 
         //east boundary
-        dw = x_all[i][M+1]-x_all[i][M];
         lam_W = lambda_f[Material_matrix[i][M+1]][0];
         lambda_vector[i][M+1][2] = lam_W;
-        }
+    }
     for(int j = 1; j<M+1;j++){
         //North boundary
-        ds = y_all[N+1][j] - y_all[N][j];
         lam_S = lambda_f[Material_matrix[N+1][j]][0];
         lambda_vector[N+1][j][3] = lam_S;
 
         //south boundary
-        dn = y_all[1][j] - y_all[0][j];
         lam_N = lambda_f[Material_matrix[0][j]][0];
         lambda_vector[0][j][0] = lam_N;
     }
@@ -328,16 +312,25 @@ static void solver_gauss_seidel () {
     for (int j = 1; j < M+1; j++) {
         //Compute lambda at the NORTH BOUNDARY
         lam_s = lambda_vector[N+1][j][3];
+        lam_n = lambda_vector[0][j][0];
 
         a_S = lam_s/(y_all[N+1][0]-y_all[N][0]);
         a_p = a_S;
-        b_p = q_w;
 
+        b_p = q_w;
+       // b_p = 0;
         //We compute the temperature
         T[1][N+1][j] = (a_S* T[1][N][j] +  b_p)/a_p;
+        //T[1][N+1][j] = T[1][N][j]; //FOR ADIABATIC WALL
 
         //COMPUTE LAMNDA AT THE SOUTH BOUNDARY
-        T[1][0][j] = Tsouth; //FOR ISOTHERMAL WALL
+        a_N = lam_n/(y_all[1][0]-y_all[0][0]);
+        a_p = a_N;
+        b_p = 0;
+
+         T[1][0][j] = Tsouth; //FOR ISOTHERMAL WALL
+         //T[1][0][j] = (a_N* T[1][1][j] +  b_p)/a_p; //FOR ADIABATIC WALL
+
     }
 
     // Compute coefficients for the internal nodes
@@ -345,8 +338,8 @@ static void solver_gauss_seidel () {
         for (int j = 1; j < M + 1; j++) {
 
             lam_n = lambda_vector[i][j][0];
-            lam_s = lambda_vector[i][j][2];
-            lam_w = lambda_vector[i][j][3];
+            lam_s = lambda_vector[i][j][3];
+            lam_w = lambda_vector[i][j][2];
             lam_e = lambda_vector[i][j][1];
 
             dn = y_all[i+1][j]-y_all[i][j];
@@ -354,44 +347,79 @@ static void solver_gauss_seidel () {
             de = x_all[i][j+1]-x_all[i][j];
             dw = x_all[i][j]-x_all[i][j-1];
 
-            a_E = Beta * lam_e * S_v/de;
-            a_S = Beta * lam_s * S_h/ds;
-            a_W = Beta * lam_w * S_v/dw;
-            a_N = Beta * lam_n * S_h/dn;
+            a_E = lam_e * S_v/de;
+            a_S = lam_s * S_h/ds;
+            a_W = lam_w * S_v/dw;
+            a_N = lam_n * S_h/dn;
 
-            a_p = a_E + a_W +a_N + a_S + rho[Material_matrix[i][j]] * V_p * Cp[Material_matrix[i][j]] / delta_t;
-            b_p = qv_p[Material_matrix[i][j]]*Beta * V_p + V_p *rho[Material_matrix[i][j]] * Cp[Material_matrix[i][j]] * T[0][i][j] / delta_t + (1-Beta) *((T[0][i][j-1] - T[0][i][j])*a_W/Beta +(T[0][i][j+1] - T[0][i][j])*a_E/Beta   + (T[0][i-1][j] - T[0][i][j]) * a_S/Beta   + (T[0][i+1][j] - T[0][i][j])*a_N/Beta + qv_p[Material_matrix[i][j]] * V_p);
+            a_p = (a_E + a_W +a_N + a_S)*Beta + rho[Material_matrix[i][j]] * V_p * Cp[Material_matrix[i][j]] / delta_t;
 
-            T[1][i][j] = T[0][i][j] + relaxation*((a_E* T[1][i][j+1] + a_W* T[1][i][j-1] + a_S * T[1][i-1][j] +  a_N*T[1][i+1][j]+ b_p)/a_p - T[0][i][j]);
+
+
+            b_p = qv_p[Material_matrix[i][j]]*Beta * V_p + V_p *rho[Material_matrix[i][j]] * Cp[Material_matrix[i][j]] * T[0][i][j] / delta_t + (1-Beta) *((T[0][i][j-1] - T[0][i][j])*a_W +(T[0][i][j+1] - T[0][i][j])*a_E   + (T[0][i-1][j] - T[0][i][j]) * a_S   + (T[0][i+1][j] - T[0][i][j])*a_N + qv_p[Material_matrix[i][j]] * V_p);
+
+            T[1][i][j] = T[0][i][j] + relaxation*((Beta*a_E* T[1][i][j+1] + Beta*a_W* T[1][i][j-1] + Beta*a_S * T[1][i-1][j] +  Beta*a_N*T[1][i+1][j]+ b_p)/a_p - T[0][i][j]);
         }
 
     }
 }
-
+static void Balanç(int cont){
+    double total_heat_flux = 0;
+    for(int i = 1; i<N+1;i++){
+        //west boundary
+        Heat_parets[2][cont] += alfa_w*(T[1][i][0] - Twest)*W*p_3[1]/N;
+        //east boundary
+        Heat_parets[1][cont] += -lambda_vector[i][M+1][2]*((T[1][i][M+1]-T[1][i][M])/(x_all[i][M+1] - x_all[i][M]))*(p_3[1]/N)*W;
+    }
+    for(int j = 1; j<M+1;j++){
+        //North boundary
+        Heat_parets[0][cont] += -lambda_vector[N+1][j][3]*((T[1][N+1][j]-T[1][N][j])/(y_all[N+1][j]-y_all[N][j-1]))*(p_3[0]/M)*W;
+        //south boundary
+        Heat_parets[3][cont] += -lambda_vector[0][j][0]*((T[1][1][j]-T[1][0][j])/(y_all[1][j]-y_all[0][j-1]))*(p_3[0]/M)*W;
+    }
+}
 
 int main() {
     bool first = true;
     int cont = 0;
+
+    double Q_est_total = 0;
+    double Q_west_total = 0;
+    double Q_nord_total = 0;
+    double Q_south_total = 0;
+
     vec_geometric_deff();
     Mapa_inicial();
     Mapa_estimat();
-
+    string s;
     while (t_actual <= (t_end+delta_t)){
         while((!norma(T_cache,T) || first)&& !excep){
             first = false;
             cache(); // start the cache that will go into norm
             solver_gauss_seidel();
         }
+
         first = true;
 
         if(cont%ratio_print_t== 0) {
             cout << "Process at: " << round(t_actual / (t_end + delta_t) * 100 ) << " %  \n";
         }
+        Balanç(cont);
 
         cont++;
         Next_delta_t();
         t_actual += delta_t;
     }
+    for (int i = 0; i< int(t_end/delta_t);i++){
+        Q_nord_total += Heat_parets[0][i]*delta_t;
+        Q_est_total += Heat_parets[1][i]*delta_t;
+        Q_west_total += Heat_parets[2][i]*delta_t;
+        Q_south_total += Heat_parets[3][i]*delta_t;
+    }
+    cout << "Calor total nord: " << Q_nord_total*1e-6 << " MJ\n";
+    cout << "Calor total est: " << Q_est_total*1e-6 << " MJ\n";
+    cout << "Calor total oest: " << Q_west_total*1e-6 << " MJ\n";
+    cout << "Calor total sud: " << Q_south_total*1e-6 << " MJ\n";
     // Keep all the data in .csv files to later do the post-processing
     std::ofstream Tempfile;
     std::ofstream pos_file_x;
@@ -401,12 +429,6 @@ int main() {
     pos_file_x.open ("posx_map.csv");
     pos_file_y.open ("posy_map.csv");
 
-    for (int i = N+1; i>=0; i--){
-        cout << "\n";
-        for (int j = 0; j<M+2; j++){
-            cout << T[1][i][j] << " ";
-        }
-    }
     for (int i = N+1; i>=0; i--){
         for (int j = 0; j<M+2; j++){
             Tempfile << T[1][i][j] << ",";

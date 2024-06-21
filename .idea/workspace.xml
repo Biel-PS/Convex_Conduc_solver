@@ -20,8 +20,8 @@
   <component name="ChangeListManager">
     <list default="true" id="ab8e33b2-448e-4253-9e67-733bb0e8adce" name="Changes" comment="update">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Aplication_cpp/Numerical_2D.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Aplication_cpp/Numerical_2D.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Aplication_cpp/Numerical_2D_PRACTICA.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Aplication_cpp/Numerical_2D_PRACTICA.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Aplication_cpp/post_proces.py" beforeDir="false" afterPath="$PROJECT_DIR$/Aplication_cpp/post_proces.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -76,7 +76,7 @@
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
     &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
     &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/thema/Desktop/uni/3r/2n quatri/Dinamica de gasos/Numerical_try/Aplication_cpp/Numerical_2D_PRACTICA.cpp&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/thema/Desktop/uni/3r/2n quatri/Dinamica de gasos/Numerical_try&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -87,7 +87,7 @@
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
-  <component name="RunManager" selected="C/C++ File.Numerical_2D.cpp">
+  <component name="RunManager" selected="Python.post_proces">
     <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -118,7 +118,7 @@
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
-      <option name="SDK_HOME" value="" />
+      <option name="SDK_HOME" value="C:\Users\thema\AppData\Local\Programs\Python\Python310\python.exe" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
@@ -132,11 +132,33 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="post_proces" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="V1" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="C:\Users\thema\AppData\Local\Programs\Python\Python310\python.exe" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Aplication_cpp/post_proces.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <list>
-      <item itemvalue="C/C++ File.Numerical_2D_PRACTICA.cpp" />
       <item itemvalue="C/C++ File.Main.cpp" />
       <item itemvalue="C/C++ File.Numerical_2D.cpp" />
+      <item itemvalue="C/C++ File.Numerical_2D_PRACTICA.cpp" />
       <item itemvalue="Python.main" />
+      <item itemvalue="Python.post_proces" />
     </list>
   </component>
   <component name="SharedIndexes">
@@ -169,7 +191,21 @@
       <workItem from="1713419313065" duration="1078000" />
       <workItem from="1713712486064" duration="6490000" />
       <workItem from="1713761194491" duration="68000" />
-      <workItem from="1713810344622" duration="8856000" />
+      <workItem from="1713810344622" duration="9087000" />
+      <workItem from="1714230906737" duration="1337000" />
+      <workItem from="1714486392586" duration="4767000" />
+      <workItem from="1714746155736" duration="1078000" />
+      <workItem from="1715266011485" duration="420000" />
+      <workItem from="1715266659793" duration="753000" />
+      <workItem from="1715975616712" duration="181000" />
+      <workItem from="1718361665681" duration="2250000" />
+      <workItem from="1718446934337" duration="10238000" />
+      <workItem from="1718460269949" duration="998000" />
+      <workItem from="1718532487388" duration="1786000" />
+      <workItem from="1718619569941" duration="1820000" />
+      <workItem from="1718642264165" duration="5000" />
+      <workItem from="1718734039228" duration="1798000" />
+      <workItem from="1718990168664" duration="5098000" />
     </task>
     <task id="LOCAL-00001" summary="update">
       <created>1707924754764</created>
@@ -283,7 +319,14 @@
       <option name="project" value="LOCAL" />
       <updated>1713761248825</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="update">
+      <created>1713823563368</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1713823563368</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -307,7 +350,7 @@
   <component name="XDebuggerManager">
     <watches-manager>
       <configuration name="CppFileRunConfiguration">
-        <watch expression="S" language="ObjectiveC" />
+        <watch expression="S" />
       </configuration>
     </watches-manager>
   </component>
