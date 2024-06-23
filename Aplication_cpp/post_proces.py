@@ -59,4 +59,6 @@ ax = sns.heatmap(data_pivoted,annot = False, cmap= "rocket")
 
 cs = plt.contour(data_pivoted, colors='y',levels = 10,corner_mask = True)
 plt.clabel(cs,cs.levels, inline = True, fmt = fmt, fontsize = 10)
+#plt.savefig(fname = "70x70.png", format = "png")
 plt.show()
+

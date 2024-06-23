@@ -3,14 +3,15 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
+#include <time.h>
 using namespace std;
 // This case its being dessigned as a square that can be discretized and where the temperatures at the top, bottom, left
 // and right are all known data.
 
 //NUMRICAL PARAMETERS
 //Mesh parameters
-const int N =100; //Number of divisions in vertical axis (rows)
-const int M =100;// Number of divisions in horizontal axis (Columns)
+const int N =120; //Number of divisions in vertical axis (rows)
+const int M =120;// Number of divisions in horizontal axis (Columns)
 const int Num_materials = 4; // Specify the number of materials in the grid
 
 const double p_1[2] = {0.50,0.40};
@@ -35,8 +36,8 @@ const double delta_t = 0.1; // Time increment [s]
 const double t_init = 0; // initial time [s]
 double t_actual = t_init;
 const double t_end = 5000; // end time [s]
-const double Beta =0; // =0 explícit, =0.5 Charles-Nicholson, = 1 Implícit
-const double relaxation = 0.9;
+const double Beta =0.5; // =0 explícit, =0.5 Charles-Nicholson, = 1 Implícit
+const double relaxation = 1.05;
 const int ratio_print_t = round(50/delta_t);
 //FISICAL PARAMETERS
 
@@ -237,6 +238,7 @@ static void vec_geometric_deff (){ //initial vector deffinition method
         lam_N = lambda_f[Material_matrix[0][j]][0];
         lambda_vector[0][j][0] = lam_N;
     }
+
 }
 
 static void Next_delta_t (){
@@ -276,19 +278,7 @@ static void solver_gauss_seidel () {
     double a_N = 0, a_E = 0, a_S = 0, a_W = 0, a_p = 0,b_p = 0;
     //lambdas at surface between nodes
     double lam_n = 0, lam_e = 0, lam_s = 0, lam_w = 0;
-    // Compute the vertex
-    for (int i = 0; i<4; i++) {
-        switch (i) {
-            case 0:                              // bottom left vertice
-                T [1][0][0]  = Tsouth;
-            case 1:                              //bottom right vertice
-                T [1][0][M+1] =Tsouth;
-            case 2:                              // top left vertice
-                T [1][N+1][0] = T[1][N+1][1];
-            case 3:                              // top right vertice
-                T [1][N+1][M+1] = T [1][N+1][M];
-        }
-    }
+
 
 
     //Compute coefficient for boundary nodes at EAST AND WEST sides
@@ -300,10 +290,10 @@ static void solver_gauss_seidel () {
         a_p = a_E + alfa_w;
         b_p = alfa_w * Twest;
 
-        //We compute the temperature
+        //COMPUTE TEMPERATURE AT THE WEST BOUNDARY
         T[1][i][0] = (a_E* T[1][i][1] +  b_p)/a_p;
 
-        //COMPUTE LAMNDA AT THE EAST BOUNDARY
+        //COMPUTE TEMPERATURE AT THE EAST BOUNDARY
         T[1][i][M+1] = 8 + 0.005*t_actual;
     }
 
@@ -318,21 +308,33 @@ static void solver_gauss_seidel () {
         a_p = a_S;
 
         b_p = q_w;
-       // b_p = 0;
+        //b_p = 0;
         //We compute the temperature
         T[1][N+1][j] = (a_S* T[1][N][j] +  b_p)/a_p;
-        //T[1][N+1][j] = T[1][N][j]; //FOR ADIABATIC WALL
+       // T[1][N+1][j] = T[1][N][j]; //FOR ADIABATIC WALL
 
         //COMPUTE LAMNDA AT THE SOUTH BOUNDARY
-        a_N = lam_n/(y_all[1][0]-y_all[0][0]);
-        a_p = a_N;
-        b_p = 0;
+//        a_N = lam_n/(y_all[1][0]-y_all[0][0]);
+//        a_p = a_N;
+//        b_p = 0;
 
          T[1][0][j] = Tsouth; //FOR ISOTHERMAL WALL
          //T[1][0][j] = (a_N* T[1][1][j] +  b_p)/a_p; //FOR ADIABATIC WALL
 
     }
-
+// Compute the vertex
+    for (int i = 0; i<4; i++) {
+        switch (i) {
+            case 0:                              // bottom left vertice
+                T [1][0][0]  = T [1][0][1];
+            case 1:                              //bottom right vertice
+                T [1][0][M+1] =T [1][0][M];
+            case 2:                              // top left vertice
+                T [1][N+1][0] = T[1][N+1][1];
+            case 3:                              // top right vertice
+                T [1][N+1][M+1] = T [1][N+1][M];
+        }
+    }
     // Compute coefficients for the internal nodes
     for (int i = 1; i < N + 1; i++) {
         for (int j = 1; j < M + 1; j++) {
@@ -358,7 +360,7 @@ static void solver_gauss_seidel () {
 
             b_p = qv_p[Material_matrix[i][j]]*Beta * V_p + V_p *rho[Material_matrix[i][j]] * Cp[Material_matrix[i][j]] * T[0][i][j] / delta_t + (1-Beta) *((T[0][i][j-1] - T[0][i][j])*a_W +(T[0][i][j+1] - T[0][i][j])*a_E   + (T[0][i-1][j] - T[0][i][j]) * a_S   + (T[0][i+1][j] - T[0][i][j])*a_N + qv_p[Material_matrix[i][j]] * V_p);
 
-            T[1][i][j] = T[0][i][j] + relaxation*((Beta*a_E* T[1][i][j+1] + Beta*a_W* T[1][i][j-1] + Beta*a_S * T[1][i-1][j] +  Beta*a_N*T[1][i+1][j]+ b_p)/a_p - T[0][i][j]);
+            T[1][i][j] = T_cache[0][i][j] + relaxation*((Beta*a_E* T[1][i][j+1] + Beta*a_W* T[1][i][j-1] + Beta*a_S * T[1][i-1][j] +  Beta*a_N*T[1][i+1][j]+ b_p)/a_p - T_cache[0][i][j]);
         }
 
     }
@@ -380,6 +382,7 @@ static void Balanç(int cont){
 }
 
 int main() {
+    clock_t tStart = clock();
     bool first = true;
     int cont = 0;
 
@@ -424,10 +427,12 @@ int main() {
     std::ofstream Tempfile;
     std::ofstream pos_file_x;
     std::ofstream pos_file_y;
+    std::ofstream Data;
 
     Tempfile.open ("Temp_map.csv");
     pos_file_x.open ("posx_map.csv");
     pos_file_y.open ("posy_map.csv");
+    Data.open("readme.txt"); //This file is used to identify what parameters where used in the simulation
 
     for (int i = N+1; i>=0; i--){
         for (int j = 0; j<M+2; j++){
@@ -439,8 +444,25 @@ int main() {
         pos_file_x << "\n";
         pos_file_y << "\n";
     }
+    double Time_exec =(double)(clock()-tStart)/CLOCKS_PER_SEC;
+    cout << "Time taken to execute: " << Time_exec << "s";
+    Data << "Beta = " << Beta << "\n" << "Delta t = " << delta_t <<" s\n";
+    Data << "Delta de convergència = " << delta_convergence << "\n";
+    Data << "Volums de control eix vertical = " << N <<"\n";
+    Data << "Volums de control eix horitzontal = " << M <<"\n";
+    Data << "Parametre de relaxació = " << relaxation <<"\n";
+    Data << "Temps d'execució = " << Time_exec << " s \n\n";
+
+    Data << "Calor total nord: " << Q_nord_total*1e-6 << " MJ\n";
+    Data << "Calor total est: " << Q_est_total*1e-6 << " MJ\n";
+    Data << "Calor total oest: " << Q_west_total*1e-6 << " MJ\n";
+    Data << "Calor total sud: " << Q_south_total*1e-6 << " MJ\n\n";
+
+    Data << "Temperatura mapa inicial = " << Tstart << " ºC \n";
+
     Tempfile.close();
     pos_file_x.close();
     pos_file_y.close();
+
     return 0;
 }
